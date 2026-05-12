@@ -19,7 +19,8 @@ def give_kudos(activity_id: int, db: Session = Depends(get_db), current_user: Us
         raise HTTPException(status_code=400, detail="Already gave kudos")
     db.add(Kudos(activity_id=activity_id, user_id=current_user.id))
     db.commit()
-    return {"kudos_count": len(activity.kudos) + 1}
+    db.refresh(activity)
+    return {"kudos_count": len(activity.kudos)}
 
 
 @router.delete("/{activity_id}/kudos", status_code=204)

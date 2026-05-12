@@ -13,5 +13,6 @@ class UserOut(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    username: str | None = None
     bio: str | None = None
     location: str | None = None

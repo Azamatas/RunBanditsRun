@@ -4,14 +4,17 @@ from backend.models.activity import Activity, SportType
 from backend.models.segment import SegmentEffort
 
 
-def get_totals(db: Session, user_id: int) -> dict:
-    rows = db.query(
+def get_totals(db: Session, user_id: int, sport_type: SportType | None = None) -> dict:
+    query = db.query(
         Activity.sport_type,
         func.count(Activity.id).label("count"),
         func.sum(Activity.distance).label("total_distance"),
         func.sum(Activity.elevation).label("total_elevation"),
         func.sum(Activity.duration).label("total_duration"),
-    ).filter(Activity.owner_id == user_id).group_by(Activity.sport_type).all()
+    ).filter(Activity.owner_id == user_id)
+    if sport_type:
+        query = query.filter(Activity.sport_type == sport_type)
+    rows = query.group_by(Activity.sport_type).all()
 
     return {
         row.sport_type: {

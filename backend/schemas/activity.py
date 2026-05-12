@@ -34,4 +34,10 @@ class ActivityOut(BaseModel):
 
 class ActivityUpdate(BaseModel):
     title: str | None = None
+    sport_type: SportType | None = None
+    distance: float | None = None
+    duration: int | None = None
+    elevation: float | None = None
+    polyline: str | None = None
     visibility: Visibility | None = None
+    started_at: datetime | None = None
