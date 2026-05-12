@@ -20,31 +20,72 @@ export default function Register() {
     },
   });
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    mutation.mutate(form);
+  }
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="card" style={{ width: 360 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fc4c02", marginBottom: 24 }}>Create Account</h1>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <h1>RunBanditsRun</h1>
+          <p>Join the community. Start tracking.</p>
+        </div>
 
-        {["username", "email", "password"].map((field) => (
-          <div className="form-group" key={field}>
-            <label style={{ textTransform: "capitalize" }}>{field}</label>
-            <input
-              type={field === "password" ? "password" : field === "email" ? "email" : "text"}
-              value={form[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-            />
-          </div>
-        ))}
+        <div className="card">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Username</label>
+              <input
+                type="text"
+                value={form.username}
+                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                placeholder="alex_runner"
+                autoComplete="username"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="you@example.com"
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="Choose a strong password"
+                autoComplete="new-password"
+                required
+              />
+            </div>
 
-        {mutation.isError && <p className="error">{mutation.error?.response?.data?.detail ?? "Registration failed"}</p>}
+            {mutation.isError && (
+              <div className="error">{mutation.error?.response?.data?.detail ?? "Registration failed"}</div>
+            )}
 
-        <button className="btn-primary" style={{ width: "100%", marginTop: 8 }} onClick={() => mutation.mutate(form)} disabled={mutation.isPending}>
-          {mutation.isPending ? "Creating account…" : "Sign Up"}
-        </button>
+            <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? (
+                <><div className="spinner" /> Creating account...</>
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+        </div>
 
-        <p style={{ marginTop: 16, fontSize: 13, textAlign: "center", color: "#666" }}>
-          Already have an account? <Link to="/login" style={{ color: "#fc4c02" }}>Log in</Link>
-        </p>
+        <div className="auth-footer">
+          Already have an account? <Link to="/login">Log in</Link>
+        </div>
       </div>
     </div>
   );

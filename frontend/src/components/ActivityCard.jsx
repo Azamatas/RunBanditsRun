@@ -3,7 +3,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { giveKudos, removeKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
 
-const SPORT_EMOJI = { run: "🏃", ride: "🚴", swim: "🏊", walk: "🚶", hike: "🥾" };
+const SPORT_EMOJI = { run: "\u{1F3C3}", ride: "\u{1F6B4}", swim: "\u{1F3CA}", walk: "\u{1F6B6}", hike: "\u{1F97E}" };
+
+const AVATAR_COLORS = [
+  "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
+  "#0d9488", "#a16207", "#6d28d9",
+];
+
+function avatarColor(id) {
+  return AVATAR_COLORS[id % AVATAR_COLORS.length];
+}
 
 function fmt(seconds) {
   if (!seconds) return "—";
@@ -13,7 +22,16 @@ function fmt(seconds) {
   return h > 0 ? `${h}h ${m}m` : `${m}m ${String(s).padStart(2, "0")}s`;
 }
 
-export default function ActivityCard({ activity, queryKey }) {
+function timeAgo(dateStr) {
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+export default function ActivityCard({ activity, queryKey, style }) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -22,44 +40,90 @@ export default function ActivityCard({ activity, queryKey }) {
     onSuccess: () => qc.invalidateQueries({ queryKey }),
   });
 
-  const removeKudosMutation = useMutation({
-    mutationFn: () => removeKudos(activity.id),
-    onSuccess: () => qc.invalidateQueries({ queryKey }),
-  });
-
   const isOwner = user?.id === activity.owner_id;
+  const username = activity.owner_username ?? "athlete";
+  const pace =
+    activity.distance && activity.duration
+      ? fmt(Math.round(activity.duration / (activity.distance / 1000)))
+      : null;
 
   return (
-    <div className="card" style={{ marginBottom: 16 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-        <Link to={`/activities/${activity.id}`} style={{ fontWeight: 700, fontSize: 16 }}>
-          {SPORT_EMOJI[activity.sport_type] ?? "🏅"} {activity.title}
+    <div className="activity-card" style={style}>
+      <div className="activity-card-body">
+        {/* User row */}
+        <div className="activity-card-header">
+          <div className="avatar avatar-sm" style={{ background: avatarColor(activity.owner_id) }}>
+            {username[0].toUpperCase()}
+          </div>
+          <div className="activity-card-user">
+            <span className="activity-card-username">{username}</span>
+            <span className="activity-card-meta">
+              <span className={`badge badge-${activity.sport_type}`}>
+                {SPORT_EMOJI[activity.sport_type]} {activity.sport_type}
+              </span>
+              <span>{timeAgo(activity.created_at)}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <Link to={`/activities/${activity.id}`} className="activity-card-title">
+          {activity.title}
         </Link>
-        <span style={{ fontSize: 12, color: "#888" }}>
-          {activity.visibility} · {new Date(activity.created_at).toLocaleDateString()}
-        </span>
-      </div>
 
-      <div style={{ display: "flex", gap: 24, fontSize: 14, color: "#555", marginBottom: 12 }}>
-        {activity.distance && <span><strong>{(activity.distance / 1000).toFixed(2)}</strong> km</span>}
-        {activity.duration && <span><strong>{fmt(activity.duration)}</strong></span>}
-        {activity.elevation && <span><strong>{activity.elevation}</strong> m elev</span>}
-      </div>
+        {/* Stats */}
+        <div className="activity-card-stats">
+          {activity.distance != null && (
+            <div className="stat-inline">
+              <span className="stat-value">{(activity.distance / 1000).toFixed(2)}</span>
+              <span className="stat-label">km</span>
+            </div>
+          )}
+          {activity.duration != null && (
+            <div className="stat-inline">
+              <span className="stat-value">{fmt(activity.duration)}</span>
+              <span className="stat-label">time</span>
+            </div>
+          )}
+          {activity.elevation != null && (
+            <div className="stat-inline">
+              <span className="stat-value">{activity.elevation}</span>
+              <span className="stat-label">m elev</span>
+            </div>
+          )}
+          {pace && (
+            <div className="stat-inline">
+              <span className="stat-value">{pace}</span>
+              <span className="stat-label">/km</span>
+            </div>
+          )}
+        </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        {!isOwner && (
-          <button
-            className="btn-ghost"
-            style={{ padding: "4px 12px", fontSize: 13 }}
-            onClick={() => kudosMutation.mutate()}
-            disabled={kudosMutation.isPending}
-          >
-            👏 Kudos ({activity.kudos_count})
-          </button>
-        )}
-        {isOwner && (
-          <span style={{ fontSize: 13, color: "#888" }}>👏 {activity.kudos_count} kudos</span>
-        )}
+        {/* Footer */}
+        <div className="activity-card-footer">
+          {!isOwner ? (
+            <button
+              className={`kudos-btn${kudosMutation.isSuccess ? " active" : ""}`}
+              onClick={() => kudosMutation.mutate()}
+              disabled={kudosMutation.isPending}
+            >
+              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <span>Kudos</span>
+              <span>({activity.kudos_count})</span>
+            </button>
+          ) : (
+            <span className="kudos-btn active" style={{ cursor: "default" }}>
+              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <span>{activity.kudos_count} kudos</span>
+            </span>
+          )}
+
+          {activity.visibility !== "public" && (
+            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "capitalize" }}>
+              {activity.visibility}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

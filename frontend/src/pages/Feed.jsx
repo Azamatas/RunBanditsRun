@@ -1,24 +1,89 @@
+import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { getFeed } from "../api/feed";
+import { useAuth } from "../context/AuthContext";
 import ActivityCard from "../components/ActivityCard";
 
+const PAGE_SIZE = 20;
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 export default function Feed() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["feed"],
+  const { user } = useAuth();
+  const [extraActivities, setExtraActivities] = useState([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const { data: firstPage, isLoading, isError } = useQuery({
+    queryKey: ["feed", 0],
     queryFn: () => getFeed(0),
   });
 
+  const allActivities = [...(firstPage ?? []), ...extraActivities];
+
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      const more = await getFeed(allActivities.length);
+      setExtraActivities((prev) => [...prev, ...more]);
+      setHasMore(more.length >= PAGE_SIZE);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [allActivities.length]);
+
   return (
     <div className="page">
-      <h2 style={{ fontWeight: 700, marginBottom: 20 }}>Your Feed</h2>
-      {isLoading && <p style={{ color: "#888" }}>Loading…</p>}
-      {isError && <p className="error">Failed to load feed.</p>}
-      {data?.length === 0 && (
-        <p style={{ color: "#888" }}>No activities yet. Follow some athletes or log your first activity!</p>
+      <div className="feed-header">
+        <h2 className="feed-greeting">
+          {getGreeting()}, {user?.username?.split("_")[0]}
+        </h2>
+        <p className="feed-sub">Here's what your network has been up to.</p>
+      </div>
+
+      {isLoading && (
+        <>
+          <div className="skeleton skeleton-card" />
+          <div className="skeleton skeleton-card" />
+          <div className="skeleton skeleton-card" />
+        </>
       )}
-      {data?.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} queryKey={["feed"]} />
+
+      {isError && <div className="error">Failed to load feed. Please try again.</div>}
+
+      {!isLoading && allActivities.length === 0 && (
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-state-icon">{"\u{1F3C3}"}</div>
+            <h3>No activities yet</h3>
+            <p>Follow some athletes or log your first activity to get started!</p>
+            <Link to="/log" className="btn-primary">Log Your First Activity</Link>
+          </div>
+        </div>
+      )}
+
+      {allActivities.map((activity, i) => (
+        <ActivityCard
+          key={activity.id}
+          activity={activity}
+          queryKey={["feed", 0]}
+          style={{ animationDelay: `${Math.min(i, 5) * 60}ms` }}
+        />
       ))}
+
+      {hasMore && allActivities.length > 0 && (
+        <div className="load-more">
+          <button onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? "Loading..." : "Load More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

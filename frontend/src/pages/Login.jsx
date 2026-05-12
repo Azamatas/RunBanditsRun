@@ -20,29 +20,59 @@ export default function Login() {
     },
   });
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    mutation.mutate(form);
+  }
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="card" style={{ width: 360 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#fc4c02", marginBottom: 24 }}>RunBanditsRun</h1>
-
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <h1>RunBanditsRun</h1>
+          <p>Track your runs. Crush your goals.</p>
         </div>
 
-        {mutation.isError && <p className="error">{mutation.error?.response?.data?.detail ?? "Login failed"}</p>}
+        <div className="card">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="Your password"
+                autoComplete="current-password"
+              />
+            </div>
 
-        <button className="btn-primary" style={{ width: "100%", marginTop: 8 }} onClick={() => mutation.mutate(form)} disabled={mutation.isPending}>
-          {mutation.isPending ? "Logging in…" : "Log In"}
-        </button>
+            {mutation.isError && (
+              <div className="error">{mutation.error?.response?.data?.detail ?? "Login failed"}</div>
+            )}
 
-        <p style={{ marginTop: 16, fontSize: 13, textAlign: "center", color: "#666" }}>
-          No account? <Link to="/register" style={{ color: "#fc4c02" }}>Sign up</Link>
-        </p>
+            <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? (
+                <><div className="spinner" /> Logging in...</>
+              ) : (
+                "Log In"
+              )}
+            </button>
+          </form>
+        </div>
+
+        <div className="auth-footer">
+          Don't have an account? <Link to="/register">Sign up</Link>
+        </div>
       </div>
     </div>
   );

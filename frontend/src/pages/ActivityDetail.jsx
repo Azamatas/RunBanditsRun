@@ -1,7 +1,15 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getActivity, deleteActivity } from "../api/activities";
+import { getActivity, deleteActivity, giveKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
+import MapView from "../components/MapView";
+
+const SPORT_EMOJI = { run: "\u{1F3C3}", ride: "\u{1F6B4}", swim: "\u{1F3CA}", walk: "\u{1F6B6}", hike: "\u{1F97E}" };
+const SPORT_COLORS = {
+  run: "var(--sport-run)", ride: "var(--sport-ride)", swim: "var(--sport-swim)",
+  walk: "var(--sport-walk)", hike: "var(--sport-hike)",
+};
+const AVATAR_COLORS = ["#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48", "#0d9488", "#a16207", "#6d28d9"];
 
 function fmt(seconds) {
   if (!seconds) return "—";
@@ -27,70 +35,150 @@ export default function ActivityDetail() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["feed"] }); navigate("/feed"); },
   });
 
-  if (isLoading) return <div className="page"><p style={{ color: "#888" }}>Loading…</p></div>;
-  if (isError || !activity) return <div className="page"><p className="error">Activity not found.</p></div>;
+  const kudosMutation = useMutation({
+    mutationFn: () => giveKudos(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["activity", id] }),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="page">
+        <div className="skeleton" style={{ height: 300, borderRadius: "var(--radius-lg)" }} />
+      </div>
+    );
+  }
+
+  if (isError || !activity) {
+    return (
+      <div className="page">
+        <div className="error">Activity not found.</div>
+        <button className="btn-secondary" onClick={() => navigate("/feed")} style={{ marginTop: 12 }}>Back to Feed</button>
+      </div>
+    );
+  }
 
   const isOwner = user?.id === activity.owner_id;
+  const pace = activity.distance && activity.duration
+    ? fmt(Math.round(activity.duration / (activity.distance / 1000)))
+    : null;
+  const sportType = activity.sport_type;
+  const taggedIds = activity.tagged_athlete_ids ?? [];
 
   return (
     <div className="page">
-      <button className="btn-ghost" style={{ marginBottom: 16 }} onClick={() => navigate(-1)}>← Back</button>
+      <button className="btn-secondary" style={{ marginBottom: 16 }} onClick={() => navigate(-1)}>
+        ← Back
+      </button>
 
-      <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-          <div>
-            <h2 style={{ fontWeight: 700, fontSize: 22 }}>{activity.title}</h2>
-            <p style={{ color: "#888", fontSize: 13, marginTop: 4 }}>
-              {activity.sport_type} · {activity.visibility} · {new Date(activity.created_at).toLocaleString()}
-            </p>
-          </div>
-          {isOwner && (
-            <button
-              className="btn-ghost"
-              style={{ color: "#c0392b", borderColor: "#c0392b" }}
-              onClick={() => { if (confirm("Delete this activity?")) deleteMutation.mutate(); }}
-            >
-              Delete
-            </button>
-          )}
-        </div>
-
-        <div style={{ display: "flex", gap: 32, marginBottom: 16 }}>
-          {activity.distance && (
-            <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>{(activity.distance / 1000).toFixed(2)}</div>
-              <div style={{ fontSize: 12, color: "#888" }}>km</div>
-            </div>
-          )}
-          {activity.duration && (
-            <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>{fmt(activity.duration)}</div>
-              <div style={{ fontSize: 12, color: "#888" }}>time</div>
-            </div>
-          )}
-          {activity.elevation && (
-            <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>{activity.elevation}</div>
-              <div style={{ fontSize: 12, color: "#888" }}>m elevation</div>
-            </div>
-          )}
-          {activity.distance && activity.duration && (
-            <div>
-              <div style={{ fontSize: 24, fontWeight: 700 }}>
-                {fmt(Math.round(activity.duration / (activity.distance / 1000)))}
-              </div>
-              <div style={{ fontSize: 12, color: "#888" }}>/km pace</div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ fontSize: 13, color: "#888" }}>👏 {activity.kudos_count} kudos</div>
-
+      <div className="card-flush">
+        {/* Map */}
         {activity.polyline && (
-          <div style={{ marginTop: 16, padding: 12, background: "#f9f9f9", borderRadius: 6, fontFamily: "monospace", fontSize: 11, wordBreak: "break-all", color: "#555" }}>
-            <strong>Route polyline:</strong> {activity.polyline}
+          <MapView polyline={activity.polyline} height={280} sportColor={SPORT_COLORS[sportType]} />
+        )}
+
+        {/* Colored header */}
+        <div className={`detail-header detail-header-${sportType}`}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <span className="badge" style={{ background: "rgba(255,255,255,0.2)", color: "#fff", marginBottom: 8 }}>
+                {SPORT_EMOJI[sportType]} {sportType}
+              </span>
+              <h1 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.03em", marginTop: 8 }}>
+                {activity.title}
+              </h1>
+              <p style={{ opacity: 0.85, fontSize: "0.8125rem", marginTop: 4 }}>
+                {activity.owner_username ?? "athlete"} · {new Date(activity.created_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+              </p>
+            </div>
+            {isOwner && (
+              <div style={{ display: "flex", gap: 8 }}>
+                <Link
+                  to={`/activities/${id}/edit`}
+                  className="edit-btn"
+                  style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}
+                >
+                  Edit
+                </Link>
+                <button
+                  className="btn-danger"
+                  style={{ background: "rgba(255,255,255,0.15)", color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
+                  onClick={() => { if (confirm("Delete this activity?")) deleteMutation.mutate(); }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stats grid */}
+        <div className="detail-stats">
+          {activity.distance != null && (
+            <div className="detail-stat">
+              <div className="detail-stat-value">{(activity.distance / 1000).toFixed(2)}</div>
+              <div className="detail-stat-label">Kilometers</div>
+            </div>
+          )}
+          {activity.duration != null && (
+            <div className="detail-stat">
+              <div className="detail-stat-value">{fmt(activity.duration)}</div>
+              <div className="detail-stat-label">Duration</div>
+            </div>
+          )}
+          {pace && (
+            <div className="detail-stat">
+              <div className="detail-stat-value">{pace}</div>
+              <div className="detail-stat-label">Pace /km</div>
+            </div>
+          )}
+          {activity.elevation != null && (
+            <div className="detail-stat">
+              <div className="detail-stat-value">{activity.elevation}</div>
+              <div className="detail-stat-label">Elevation (m)</div>
+            </div>
+          )}
+        </div>
+
+        {/* Tagged athletes */}
+        {taggedIds.length > 0 && (
+          <div className="tagged-row" style={{ padding: "0 24px 16px", borderTop: "none" }}>
+            {taggedIds.map((tid) => (
+              <div
+                key={tid}
+                className="avatar avatar-sm"
+                style={{ background: AVATAR_COLORS[tid % AVATAR_COLORS.length] }}
+                title={`Athlete #${tid}`}
+              >
+                {String.fromCharCode(65 + (tid % 26))}
+              </div>
+            ))}
+            <span style={{ marginLeft: 8 }}>
+              {taggedIds.length} tagged athlete{taggedIds.length !== 1 ? "s" : ""}
+            </span>
           </div>
         )}
+
+        {/* Kudos bar */}
+        <div style={{ padding: "16px 24px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 16 }}>
+          {!isOwner ? (
+            <button
+              className={`kudos-btn${kudosMutation.isSuccess ? " active" : ""}`}
+              onClick={() => kudosMutation.mutate()}
+              disabled={kudosMutation.isPending}
+            >
+              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              Give Kudos ({activity.kudos_count})
+            </button>
+          ) : (
+            <span className="kudos-btn active" style={{ cursor: "default" }}>
+              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              {activity.kudos_count} kudos
+            </span>
+          )}
+          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "capitalize", marginLeft: "auto" }}>
+            {activity.visibility}
+          </span>
+        </div>
       </div>
     </div>
   );

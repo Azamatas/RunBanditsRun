@@ -1,11 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const s = {
-  nav: { background: "#fff", borderBottom: "1px solid #e5e5e5", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 },
-  brand: { fontWeight: 800, fontSize: 18, color: "#fc4c02", letterSpacing: -0.5 },
-  links: { display: "flex", gap: 24, alignItems: "center", fontSize: 14, fontWeight: 500 },
-};
+const AVATAR_COLORS = [
+  "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
+  "#0d9488", "#a16207", "#6d28d9",
+];
+
+function avatarColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
 export default function NavBar() {
   const { user, logout } = useAuth();
@@ -17,16 +22,36 @@ export default function NavBar() {
   }
 
   return (
-    <nav style={s.nav}>
-      <Link to="/feed" style={s.brand}>RunBanditsRun</Link>
-      {user && (
-        <div style={s.links}>
-          <Link to="/feed">Feed</Link>
-          <Link to="/log">Log Activity</Link>
-          <Link to="/profile">Profile</Link>
-          <button className="btn-ghost" style={{ padding: "4px 12px" }} onClick={handleLogout}>Logout</button>
-        </div>
-      )}
+    <nav className="navbar">
+      <div className="navbar-inner">
+        <Link to="/feed" className="navbar-brand">RunBanditsRun</Link>
+
+        {user && (
+          <div className="navbar-links">
+            <NavLink to="/feed" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
+              <span>Feed</span>
+            </NavLink>
+            <NavLink to="/explore" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
+              <span>Explore</span>
+            </NavLink>
+            <NavLink to="/segments" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
+              <span>Segments</span>
+            </NavLink>
+            <button className="nav-add-btn" onClick={() => navigate("/log")} title="Log Activity">
+              +
+            </button>
+
+            <div className="nav-user">
+              <Link to="/profile" className="nav-avatar-link" title="Profile">
+                <div className="avatar avatar-sm" style={{ background: avatarColor(user.username) }}>
+                  {user.username[0]}
+                </div>
+              </Link>
+              <button className="btn-ghost btn-sm" onClick={handleLogout}>Log out</button>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }
