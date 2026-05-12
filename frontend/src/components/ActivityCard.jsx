@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { giveKudos, removeKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
-
-const SPORT_EMOJI = { run: "\u{1F3C3}", ride: "\u{1F6B4}", swim: "\u{1F3CA}", walk: "\u{1F6B6}", hike: "\u{1F97E}" };
+import SportIcon, { KudosIcon } from "./SportIcon";
+import { SPORT_THUMBNAILS } from "../constants/images";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
@@ -49,8 +49,19 @@ export default function ActivityCard({ activity, queryKey, style }) {
 
   return (
     <div className="activity-card" style={style}>
+      <div
+        className="activity-card-image"
+        style={{ backgroundImage: `url(${SPORT_THUMBNAILS[activity.sport_type] ?? SPORT_THUMBNAILS.run})` }}
+      >
+        <div className="activity-card-image-overlay">
+          <span className={`badge badge-${activity.sport_type} badge-on-image`}>
+            <SportIcon sport={activity.sport_type} size={14} color="currentColor" />
+            {activity.sport_type}
+          </span>
+        </div>
+      </div>
+
       <div className="activity-card-body">
-        {/* User row */}
         <div className="activity-card-header">
           <div className="avatar avatar-sm" style={{ background: avatarColor(activity.owner_id) }}>
             {username[0].toUpperCase()}
@@ -58,20 +69,15 @@ export default function ActivityCard({ activity, queryKey, style }) {
           <div className="activity-card-user">
             <span className="activity-card-username">{username}</span>
             <span className="activity-card-meta">
-              <span className={`badge badge-${activity.sport_type}`}>
-                {SPORT_EMOJI[activity.sport_type]} {activity.sport_type}
-              </span>
               <span>{timeAgo(activity.created_at)}</span>
             </span>
           </div>
         </div>
 
-        {/* Title */}
         <Link to={`/activities/${activity.id}`} className="activity-card-title">
           {activity.title}
         </Link>
 
-        {/* Stats */}
         <div className="activity-card-stats">
           {activity.distance != null && (
             <div className="stat-inline">
@@ -99,7 +105,6 @@ export default function ActivityCard({ activity, queryKey, style }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="activity-card-footer">
           {!isOwner ? (
             <button
@@ -107,13 +112,13 @@ export default function ActivityCard({ activity, queryKey, style }) {
               onClick={() => kudosMutation.mutate()}
               disabled={kudosMutation.isPending}
             >
-              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <KudosIcon size={16} color="currentColor" />
               <span>Kudos</span>
               <span>({activity.kudos_count})</span>
             </button>
           ) : (
             <span className="kudos-btn active" style={{ cursor: "default" }}>
-              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <KudosIcon size={16} color="currentColor" />
               <span>{activity.kudos_count} kudos</span>
             </span>
           )}

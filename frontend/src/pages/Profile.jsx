@@ -4,7 +4,9 @@ import { getStats } from "../api/users";
 import ActivityCard from "../components/ActivityCard";
 import ActivityFilters from "../components/ActivityFilters";
 import EditProfileModal from "../components/EditProfileModal";
+import SportIcon from "../components/SportIcon";
 import { useAuth } from "../context/AuthContext";
+import { HERO_IMAGES, EMPTY_STATE_IMAGES } from "../constants/images";
 import client from "../api/client";
 
 const AVATAR_COLORS = [
@@ -17,11 +19,19 @@ function avatarColor(id) {
 }
 
 const SPORT_LABELS = {
-  run: { icon: "\u{1F3C3}", label: "Running" },
-  ride: { icon: "\u{1F6B4}", label: "Cycling" },
-  swim: { icon: "\u{1F3CA}", label: "Swimming" },
-  walk: { icon: "\u{1F6B6}", label: "Walking" },
-  hike: { icon: "\u{1F97E}", label: "Hiking" },
+  run: "Running",
+  ride: "Cycling",
+  swim: "Swimming",
+  walk: "Walking",
+  hike: "Hiking",
+};
+
+const SPORT_COLORS = {
+  run: "var(--sport-run)",
+  ride: "var(--sport-ride)",
+  swim: "var(--sport-swim)",
+  walk: "var(--sport-walk)",
+  hike: "var(--sport-hike)",
 };
 
 const PR_LABELS = {
@@ -71,10 +81,13 @@ export default function Profile() {
     <div className="page">
       {editing && <EditProfileModal onClose={() => setEditing(false)} />}
 
-      {/* Profile hero */}
-      <div className="card" style={{ marginBottom: 20 }}>
+      {/* Profile hero with cover photo */}
+      <div className="card-flush" style={{ marginBottom: 20 }}>
+        <div className="profile-cover" style={{ backgroundImage: `url(${HERO_IMAGES.profile})` }}>
+          <div className="profile-cover-overlay" />
+        </div>
         <div className="profile-hero">
-          <div className="avatar avatar-xl" style={{ background: avatarColor(user?.id ?? 0) }}>
+          <div className="avatar avatar-xl profile-avatar" style={{ background: avatarColor(user?.id ?? 0) }}>
             {user?.username?.[0]?.toUpperCase()}
           </div>
           <div className="profile-info">
@@ -112,12 +125,14 @@ export default function Profile() {
           <h3 className="section-title">Training Totals</h3>
           <div className="stats-grid">
             {sportTotals.map(([sport, data]) => {
-              const meta = SPORT_LABELS[sport] ?? { icon: "", label: sport };
+              const label = SPORT_LABELS[sport] ?? sport;
               return (
                 <div className="stat" key={sport}>
-                  <div style={{ fontSize: "1.5rem", marginBottom: 4 }}>{meta.icon}</div>
+                  <div className="stat-sport-icon" style={{ color: SPORT_COLORS[sport] }}>
+                    <SportIcon sport={sport} size={28} color="currentColor" />
+                  </div>
                   <div className="stat-value">{data.count}</div>
-                  <div className="stat-label">{meta.label}</div>
+                  <div className="stat-label">{label}</div>
                   <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     {(data.total_distance / 1000).toFixed(1)} km
                     {data.total_elevation != null && data.total_elevation > 0 && (
@@ -138,7 +153,9 @@ export default function Profile() {
       {filtered.length === 0 && (
         <div className="card">
           <div className="empty-state">
-            <div className="empty-state-icon">{"\u{1F3C3}"}</div>
+            <div className="empty-state-image">
+              <img src={EMPTY_STATE_IMAGES.noActivities} alt="No activities" />
+            </div>
             <h3>No activities</h3>
             <p>{sportFilter === "all" ? "Log your first activity to start tracking!" : `No ${sportFilter} activities yet.`}</p>
           </div>

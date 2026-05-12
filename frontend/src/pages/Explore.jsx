@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { searchUsers, getFollowing, getPendingRequests, getSentRequests, followUser, acceptFollow } from "../api/users";
 import UserCard from "../components/UserCard";
+import { SearchIcon } from "../components/SportIcon";
+import { HERO_IMAGES } from "../constants/images";
 
 export default function Explore() {
   const [query, setQuery] = useState("");
@@ -62,12 +64,17 @@ export default function Explore() {
 
   return (
     <div className="page">
-      <h2 className="section-title" style={{ marginBottom: 24, fontSize: "var(--text-2xl)" }}>
-        Explore Athletes
-      </h2>
+      <div className="explore-hero" style={{ backgroundImage: `url(${HERO_IMAGES.explore})` }}>
+        <div className="explore-hero-overlay">
+          <h2>Explore Athletes</h2>
+          <p>Find and connect with fellow athletes</p>
+        </div>
+      </div>
 
       <div className="search-bar">
-        <span className="search-bar-icon">{"\u{1F50D}"}</span>
+        <span className="search-bar-icon">
+          <SearchIcon size={18} color="var(--text-muted)" />
+        </span>
         <input
           placeholder="Search athletes..."
           value={query}

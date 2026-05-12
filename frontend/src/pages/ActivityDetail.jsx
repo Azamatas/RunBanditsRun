@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getActivity, deleteActivity, giveKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
 import MapView from "../components/MapView";
+import SportIcon, { KudosIcon } from "../components/SportIcon";
+import { SPORT_IMAGES } from "../constants/images";
 
-const SPORT_EMOJI = { run: "\u{1F3C3}", ride: "\u{1F6B4}", swim: "\u{1F3CA}", walk: "\u{1F6B6}", hike: "\u{1F97E}" };
 const SPORT_COLORS = {
   run: "var(--sport-run)", ride: "var(--sport-ride)", swim: "var(--sport-swim)",
   walk: "var(--sport-walk)", hike: "var(--sport-hike)",
@@ -63,6 +64,7 @@ export default function ActivityDetail() {
     : null;
   const sportType = activity.sport_type;
   const taggedIds = activity.tagged_athlete_ids ?? [];
+  const hasMap = !!activity.polyline;
 
   return (
     <div className="page">
@@ -71,17 +73,25 @@ export default function ActivityDetail() {
       </button>
 
       <div className="card-flush">
-        {/* Map */}
-        {activity.polyline && (
+        {/* Map or sport hero image */}
+        {hasMap ? (
           <MapView polyline={activity.polyline} height={280} sportColor={SPORT_COLORS[sportType]} />
+        ) : (
+          <div
+            className="detail-hero-image"
+            style={{ backgroundImage: `url(${SPORT_IMAGES[sportType] ?? SPORT_IMAGES.run})` }}
+          >
+            <div className="detail-hero-image-overlay" />
+          </div>
         )}
 
         {/* Colored header */}
         <div className={`detail-header detail-header-${sportType}`}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
-              <span className="badge" style={{ background: "rgba(255,255,255,0.2)", color: "#fff", marginBottom: 8 }}>
-                {SPORT_EMOJI[sportType]} {sportType}
+              <span className="badge badge-on-image" style={{ background: "rgba(255,255,255,0.2)", color: "#fff", marginBottom: 8 }}>
+                <SportIcon sport={sportType} size={14} color="#fff" />
+                {sportType}
               </span>
               <h1 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.03em", marginTop: 8 }}>
                 {activity.title}
@@ -166,12 +176,12 @@ export default function ActivityDetail() {
               onClick={() => kudosMutation.mutate()}
               disabled={kudosMutation.isPending}
             >
-              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <KudosIcon size={16} color="currentColor" />
               Give Kudos ({activity.kudos_count})
             </button>
           ) : (
             <span className="kudos-btn active" style={{ cursor: "default" }}>
-              <span className="kudos-icon">{"\u{1F44F}"}</span>
+              <KudosIcon size={16} color="currentColor" />
               {activity.kudos_count} kudos
             </span>
           )}

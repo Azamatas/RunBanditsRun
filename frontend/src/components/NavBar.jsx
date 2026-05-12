@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { LogoIcon } from "./SportIcon";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
@@ -24,7 +25,10 @@ export default function NavBar() {
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <Link to="/feed" className="navbar-brand">RunBanditsRun</Link>
+        <Link to="/feed" className="navbar-brand">
+          <LogoIcon size={28} />
+          <span>RunBanditsRun</span>
+        </Link>
 
         {user && (
           <div className="navbar-links">

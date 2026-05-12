@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createActivity } from "../api/activities";
 import { getFollowing } from "../api/users";
+import SportIcon from "../components/SportIcon";
+import { SPORT_THUMBNAILS } from "../constants/images";
 
 const SPORTS = [
-  { value: "run", icon: "\u{1F3C3}", label: "Run" },
-  { value: "ride", icon: "\u{1F6B4}", label: "Ride" },
-  { value: "swim", icon: "\u{1F3CA}", label: "Swim" },
-  { value: "walk", icon: "\u{1F6B6}", label: "Walk" },
-  { value: "hike", icon: "\u{1F97E}", label: "Hike" },
+  { value: "run", label: "Run" },
+  { value: "ride", label: "Ride" },
+  { value: "swim", label: "Swim" },
+  { value: "walk", label: "Walk" },
+  { value: "hike", label: "Hike" },
 ];
 
 const VISIBILITIES = ["public", "friends", "private"];
@@ -83,7 +85,11 @@ export default function LogActivity() {
                   className={`sport-option${form.sport_type === s.value ? " active" : ""}`}
                   onClick={() => setForm({ ...form, sport_type: s.value })}
                 >
-                  <span className="sport-icon">{s.icon}</span>
+                  <div className="sport-option-image" style={{ backgroundImage: `url(${SPORT_THUMBNAILS[s.value]})` }}>
+                    <div className="sport-option-image-overlay">
+                      <SportIcon sport={s.value} size={22} color="currentColor" />
+                    </div>
+                  </div>
                   {s.label}
                 </button>
               ))}
