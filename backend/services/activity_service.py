@@ -40,3 +40,24 @@ def get_activity(db: Session, activity_id: int, viewer_id: int | None) -> Activi
     if activity and can_view(db, activity, viewer_id):
         return activity
     return None
+
+
+def update_activity(db: Session, activity_id: int, owner_id: int, updates: dict) -> Activity | None:
+    activity = db.query(Activity).filter(Activity.id == activity_id, Activity.owner_id == owner_id).first()
+    if not activity:
+        return None
+    for field, value in updates.items():
+        setattr(activity, field, value)
+    db.commit()
+    db.refresh(activity)
+    return activity
+
+
+def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
+    from backend.models.activity import Activity as ActivityModel
+    activity = db.query(ActivityModel).filter(ActivityModel.id == activity_id, ActivityModel.owner_id == owner_id).first()
+    if not activity:
+        return False
+    db.delete(activity)
+    db.commit()
+    return True

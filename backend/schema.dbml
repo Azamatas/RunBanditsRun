@@ -1,0 +1,113 @@
+Table users {
+  id INTEGER [pk, increment]
+  username VARCHAR(50) [not null, unique]
+  email VARCHAR(255) [not null, unique]
+  password_hash VARCHAR(255) [not null]
+  bio TEXT
+  location VARCHAR(100)
+  created_at DATETIME [default: `datetime.utcnow`]
+}
+
+Table activities {
+  id INTEGER [pk, increment]
+  owner_id INTEGER [not null]
+  title VARCHAR(200) [not null]
+  sport_type ESPORT_TYPE [not null]
+  distance FLOAT
+  duration INTEGER
+  elevation FLOAT
+  polyline TEXT
+  visibility EVISIBILITY [default: 'public']
+  started_at DATETIME
+  created_at DATETIME [default: `datetime.utcnow`]
+
+  indexes {
+    (owner_id)
+  }
+}
+
+Table friendships {
+  id INTEGER [pk, increment]
+  requester_id INTEGER [not null]
+  addressee_id INTEGER [not null]
+  status EFRIENDSHIP_STATUS [default: 'pending']
+  created_at DATETIME [default: `datetime.utcnow`]
+
+  indexes {
+    (requester_id)
+    (addressee_id)
+  }
+}
+
+Table kudos {
+  id INTEGER [pk, increment]
+  activity_id INTEGER [not null]
+  user_id INTEGER [not null]
+  created_at DATETIME [default: `datetime.utcnow`]
+
+  indexes {
+    (activity_id)
+    (user_id)
+  }
+}
+
+Table segments {
+  id INTEGER [pk, increment]
+  name VARCHAR(200) [not null]
+  polyline TEXT
+  distance FLOAT
+}
+
+Table segment_efforts {
+  id INTEGER [pk, increment]
+  segment_id INTEGER [not null]
+  activity_id INTEGER [not null]
+  athlete_id INTEGER [not null]
+  elapsed_time INTEGER [not null]
+  started_at DATETIME
+
+  indexes {
+    (segment_id)
+    (activity_id)
+    (athlete_id)
+  }
+}
+
+Table activity_athletes {
+  activity_id INTEGER [pk]
+  user_id INTEGER [pk]
+}
+
+Enum ESPORT_TYPE {
+  run
+  ride
+  swim
+  walk
+  hike
+}
+
+Enum EVISIBILITY {
+  public
+  friends
+  private
+}
+
+Enum EFRIENDSHIP_STATUS {
+  pending
+  accepted
+}
+
+Ref: activities.owner_id > users.id
+
+Ref: friendships.requester_id > users.id
+Ref: friendships.addressee_id > users.id
+
+Ref: kudos.activity_id > activities.id
+Ref: kudos.user_id > users.id
+
+Ref: segment_efforts.segment_id > segments.id
+Ref: segment_efforts.activity_id > activities.id
+Ref: segment_efforts.athlete_id > users.id
+
+Ref: activity_athletes.activity_id > activities.id
+Ref: activity_athletes.user_id > users.id

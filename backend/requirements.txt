@@ -4,3 +4,5 @@ sqlalchemy
 pydantic[email]
 python-jose[cryptography]
 passlib[bcrypt]
+httpx
+pytest
