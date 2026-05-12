@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { getFeed } from "../api/feed";
 import { useAuth } from "../context/AuthContext";
 import ActivityCard from "../components/ActivityCard";
+import { HERO_IMAGES, EMPTY_STATE_IMAGES } from "../constants/images";
 
 const PAGE_SIZE = 20;
 
@@ -40,11 +41,13 @@ export default function Feed() {
 
   return (
     <div className="page">
-      <div className="feed-header">
-        <h2 className="feed-greeting">
-          {getGreeting()}, {user?.username?.split("_")[0]}
-        </h2>
-        <p className="feed-sub">Here's what your network has been up to.</p>
+      <div className="feed-hero" style={{ backgroundImage: `url(${HERO_IMAGES.feed})` }}>
+        <div className="feed-hero-overlay">
+          <h2 className="feed-greeting">
+            {getGreeting()}, {user?.username?.split("_")[0]}
+          </h2>
+          <p className="feed-sub">Here's what your network has been up to.</p>
+        </div>
       </div>
 
       {isLoading && (
@@ -60,7 +63,9 @@ export default function Feed() {
       {!isLoading && allActivities.length === 0 && (
         <div className="card">
           <div className="empty-state">
-            <div className="empty-state-icon">{"\u{1F3C3}"}</div>
+            <div className="empty-state-image">
+              <img src={EMPTY_STATE_IMAGES.noActivities} alt="Start your journey" />
+            </div>
             <h3>No activities yet</h3>
             <p>Follow some athletes or log your first activity to get started!</p>
             <Link to="/log" className="btn-primary">Log Your First Activity</Link>

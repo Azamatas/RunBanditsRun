@@ -1,3 +1,5 @@
+import SportIcon from "./SportIcon";
+
 const SPORTS = [
   { value: "all", label: "All" },
   { value: "run", label: "Run" },
@@ -16,6 +18,7 @@ export default function ActivityFilters({ selected, onChange }) {
           className={`filter-pill${selected === s.value ? " active" : ""}`}
           onClick={() => onChange(s.value)}
         >
+          {s.value !== "all" && <SportIcon sport={s.value} size={14} color="currentColor" />}
           {s.label}
         </button>
       ))}

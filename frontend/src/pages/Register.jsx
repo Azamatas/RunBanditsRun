@@ -4,6 +4,8 @@ import { useMutation } from "@tanstack/react-query";
 import { register } from "../api/auth";
 import { getMe } from "../api/users";
 import { useAuth } from "../context/AuthContext";
+import { LogoIcon } from "../components/SportIcon";
+import { HERO_IMAGES } from "../constants/images";
 
 export default function Register() {
   const { saveToken, setUser } = useAuth();
@@ -27,64 +29,79 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <h1>RunBanditsRun</h1>
-          <p>Join the community. Start tracking.</p>
+      <div className="auth-hero-panel" style={{ backgroundImage: `url(${HERO_IMAGES.auth})` }}>
+        <div className="auth-hero-overlay">
+          <div className="auth-hero-content">
+            <LogoIcon size={48} />
+            <h2>Your journey starts here.</h2>
+            <p>Track every step, every ride, every lap. Share with friends and crush your goals.</p>
+          </div>
         </div>
+      </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Username</label>
-              <input
-                type="text"
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
-                placeholder="alex_runner"
-                autoComplete="username"
-                required
-              />
+      <div className="auth-form-panel">
+        <div className="auth-card">
+          <div className="auth-brand">
+            <div className="auth-brand-logo">
+              <LogoIcon size={36} />
+              <h1>RunBanditsRun</h1>
             </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="Choose a strong password"
-                autoComplete="new-password"
-                required
-              />
-            </div>
+            <p>Join the community. Start tracking.</p>
+          </div>
 
-            {mutation.isError && (
-              <div className="error">{mutation.error?.response?.data?.detail ?? "Registration failed"}</div>
-            )}
+          <div className="card">
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>Username</label>
+                <input
+                  type="text"
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  placeholder="alex_runner"
+                  autoComplete="username"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="Choose a strong password"
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
 
-            <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? (
-                <><div className="spinner" /> Creating account...</>
-              ) : (
-                "Create Account"
+              {mutation.isError && (
+                <div className="error">{mutation.error?.response?.data?.detail ?? "Registration failed"}</div>
               )}
-            </button>
-          </form>
-        </div>
 
-        <div className="auth-footer">
-          Already have an account? <Link to="/login">Log in</Link>
+              <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (
+                  <><div className="spinner" /> Creating account...</>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </form>
+          </div>
+
+          <div className="auth-footer">
+            Already have an account? <Link to="/login">Log in</Link>
+          </div>
         </div>
       </div>
     </div>

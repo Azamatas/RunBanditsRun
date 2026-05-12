@@ -222,6 +222,11 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .badge-walk { background: #f0fdfa; color: var(--sport-walk); }
 .badge-hike { background: #fef9c3; color: var(--sport-hike); }
 
+.badge-on-image {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 /* Avatar */
 .avatar {
   width: 40px;
@@ -241,7 +246,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .avatar-lg { width: 72px; height: 72px; font-size: var(--text-2xl); }
 .avatar-xl { width: 96px; height: 96px; font-size: var(--text-3xl); }
 
-/* Sport Selector */
+/* Sport Selector with images */
 .sport-selector { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .sport-option {
@@ -249,7 +254,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 16px;
+  padding: 0;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
   background: var(--bg-card);
@@ -260,10 +265,36 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   color: var(--text-secondary);
   text-transform: capitalize;
   min-width: 72px;
+  overflow: hidden;
+  padding-bottom: 8px;
 }
 
 .sport-option:hover { border-color: var(--gray-300); background: var(--gray-50); }
 .sport-option.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+.sport-option-image {
+  width: 100%;
+  height: 48px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 4px;
+}
+
+.sport-option-image-overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background var(--duration) var(--ease);
+}
+
+.sport-option.active .sport-option-image-overlay {
+  background: rgba(252, 76, 2, 0.5);
+}
+
 .sport-option .sport-icon { font-size: 1.5rem; }
 
 /* Visibility Pills */
@@ -300,7 +331,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   border-radius: var(--radius-sm);
 }
 
-.skeleton-card { height: 180px; border-radius: var(--radius-lg); margin-bottom: 16px; }
+.skeleton-card { height: 240px; border-radius: var(--radius-lg); margin-bottom: 16px; }
 
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -326,7 +357,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .kudos-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 .kudos-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
 
-.kudos-btn:active:not(:disabled) .kudos-icon { animation: kudos-pop 400ms var(--ease); }
+.kudos-btn:active:not(:disabled) svg { animation: kudos-pop 400ms var(--ease); }
 
 @keyframes kudos-pop {
   0% { transform: scale(1); }
@@ -359,6 +390,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 900;
   font-size: var(--text-xl);
   color: var(--accent);
@@ -422,17 +456,68 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .nav-user { margin-left: 8px; padding-left: 8px; }
 }
 
-/* Auth Pages */
+/* ============================================
+   Auth Pages — Split Layout with Hero Image
+   ============================================ */
+
 .auth-page {
   min-height: 100vh;
   display: flex;
+  background: var(--bg);
+}
+
+.auth-hero-panel {
+  display: none;
+  width: 50%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.auth-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(252, 76, 2, 0.85) 0%, rgba(200, 50, 0, 0.75) 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 60px;
+}
+
+.auth-hero-content {
+  color: #fff;
+  max-width: 400px;
+}
+
+.auth-hero-content h2 {
+  font-size: 2.25rem;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-top: 20px;
+}
+
+.auth-hero-content p {
+  font-size: var(--text-base);
+  opacity: 0.9;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.auth-form-panel {
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
   background:
     radial-gradient(ellipse at 20% 50%, rgba(252, 76, 2, 0.06) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 20%, rgba(252, 76, 2, 0.04) 0%, transparent 50%),
     var(--bg);
-  padding: 16px;
+}
+
+@media (min-width: 900px) {
+  .auth-hero-panel { display: block; }
+  .auth-form-panel { width: 50%; flex: none; }
 }
 
 .auth-card {
@@ -442,6 +527,14 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 .auth-brand { text-align: center; margin-bottom: 32px; }
+
+.auth-brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
 .auth-brand h1 { font-size: var(--text-2xl); font-weight: 900; color: var(--accent); letter-spacing: -0.03em; }
 .auth-brand p { color: var(--text-secondary); font-size: var(--text-sm); margin-top: 4px; }
 
@@ -454,17 +547,138 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .auth-footer a { color: var(--accent); font-weight: 600; }
 .auth-footer a:hover { text-decoration: underline; }
 
-/* Feed */
-.feed-header { margin-bottom: 24px; }
-.feed-greeting { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.03em; }
-.feed-sub { color: var(--text-secondary); font-size: var(--text-sm); margin-top: 4px; }
+/* ============================================
+   Feed — Hero Banner
+   ============================================ */
+
+.feed-hero {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.feed-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(252, 76, 2, 0.8) 0%, rgba(180, 40, 0, 0.7) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  color: #fff;
+}
+
+.feed-greeting { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.03em; color: #fff; }
+.feed-sub { color: rgba(255, 255, 255, 0.85); font-size: var(--text-sm); margin-top: 4px; }
+
+/* ============================================
+   Explore — Hero Banner
+   ============================================ */
+
+.explore-hero {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.explore-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.8) 0%, rgba(6, 95, 70, 0.7) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  color: #fff;
+}
+
+.explore-hero-overlay h2 {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.explore-hero-overlay p {
+  font-size: var(--text-sm);
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+/* ============================================
+   Segments — Hero Banner
+   ============================================ */
+
+.segments-hero {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.segments-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(161, 98, 7, 0.8) 0%, rgba(120, 53, 15, 0.7) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  color: #fff;
+}
+
+.segments-hero-overlay h2 {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.segments-hero-overlay p {
+  font-size: var(--text-sm);
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
+/* ============================================
+   Empty States with Images
+   ============================================ */
 
 .empty-state { text-align: center; padding: 48px 24px; }
-.empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
 .empty-state h3 { font-size: var(--text-lg); font-weight: 700; margin-bottom: 8px; }
 .empty-state p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: 24px; }
 
-/* Activity Card */
+.empty-state-image {
+  width: 200px;
+  height: 140px;
+  margin: 0 auto 20px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.empty-state-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  filter: grayscale(30%);
+}
+
+.empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+
+/* ============================================
+   Activity Card — with Image Banner
+   ============================================ */
+
 .activity-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -476,6 +690,22 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 .activity-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.activity-card-image {
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.activity-card-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.1) 60%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 12px 16px;
+}
 
 .activity-card-body { padding: 20px; }
 
@@ -518,11 +748,26 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Activity Detail */
+/* ============================================
+   Activity Detail — Hero Image fallback
+   ============================================ */
+
+.detail-hero-image {
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.detail-hero-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 60%);
+}
+
 .detail-header {
   padding: 24px;
   color: #fff;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   position: relative;
   overflow: hidden;
 }
@@ -566,13 +811,42 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   margin-top: 4px;
 }
 
-/* Profile */
-.profile-hero { display: flex; align-items: center; gap: 24px; padding: 32px; }
+/* ============================================
+   Profile — Cover Photo
+   ============================================ */
+
+.profile-cover {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.profile-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
+}
+
+.profile-hero { display: flex; align-items: center; gap: 24px; padding: 0 32px 32px; }
+
+.profile-avatar {
+  margin-top: -48px;
+  border: 4px solid var(--bg-card);
+  box-shadow: var(--shadow-md);
+}
 
 .profile-info h2 { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.03em; }
 .profile-location { color: var(--text-secondary); font-size: var(--text-sm); margin-top: 4px; }
 .profile-bio { margin-top: 8px; font-size: var(--text-base); color: var(--text); }
 .profile-joined { font-size: var(--text-xs); color: var(--text-muted); margin-top: 8px; }
+
+.stat-sport-icon {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .stats-grid {
   display: grid;
@@ -644,7 +918,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
 
 @media (max-width: 640px) {
-  .profile-hero { flex-direction: column; text-align: center; padding: 24px; }
+  .profile-hero { flex-direction: column; text-align: center; padding: 0 24px 24px; }
+  .profile-avatar { margin-top: -36px; }
 }
 
 /* ============================================
@@ -733,6 +1008,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   font-size: var(--text-lg);
   color: var(--text-muted);
   pointer-events: none;
+  display: flex;
+  align-items: center;
 }
 
 /* ============================================
@@ -853,6 +1130,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   transition: all var(--duration) var(--ease);
   white-space: nowrap;
   font-family: var(--font);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .filter-pill:hover { border-color: var(--gray-300); color: var(--text); }
@@ -953,7 +1233,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .tag-chip-remove:hover { background: var(--danger); }
 
 /* ============================================
-   Segment Card
+   Segment Card — with Background Image
    ============================================ */
 
 .segment-card {
@@ -967,6 +1247,62 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .segment-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
+.segment-card-image {
+  position: relative;
+  padding: 0;
+  min-height: 180px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.segment-card-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s var(--ease);
+}
+
+.segment-card-image:hover .segment-card-bg {
+  transform: scale(1.05);
+}
+
+.segment-card-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.05) 100%);
+  pointer-events: none;
+}
+
+.segment-card-content {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  padding: 20px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.segment-card-sport-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .segment-card-name { font-weight: 700; font-size: var(--text-base); margin-bottom: 8px; }
 
 .segment-card-meta {
@@ -974,7 +1310,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   align-items: center;
   gap: 12px;
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.segment-card-image .segment-card-meta .badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
 .segment-grid {
