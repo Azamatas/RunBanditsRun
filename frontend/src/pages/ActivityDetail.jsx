@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getActivity, deleteActivity, giveKudos } from "../api/activities";
+import { getActivity, deleteActivity, giveKudos, removeKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
 import MapView from "../components/MapView";
 import SportIcon, { KudosIcon } from "../components/SportIcon";
@@ -36,9 +36,25 @@ export default function ActivityDetail() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["feed"] }); navigate("/feed"); },
   });
 
+  const hasKudos = activity?.user_has_kudos ?? false;
+
   const kudosMutation = useMutation({
-    mutationFn: () => giveKudos(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["activity", id] }),
+    mutationFn: () => hasKudos ? removeKudos(id) : giveKudos(id),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ["activity", id] });
+      const prev = qc.getQueryData(["activity", id]);
+      qc.setQueryData(["activity", id], (old) => {
+        if (!old) return old;
+        return { ...old, user_has_kudos: !hasKudos, kudos_count: hasKudos ? old.kudos_count - 1 : old.kudos_count + 1 };
+      });
+      return { prev };
+    },
+    onError: (err, vars, context) => {
+      if (context?.prev) qc.setQueryData(["activity", id], context.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["activity", id] });
+    },
   });
 
   if (isLoading) {
@@ -97,7 +113,11 @@ export default function ActivityDetail() {
                 {activity.title}
               </h1>
               <p style={{ opacity: 0.85, fontSize: "0.8125rem", marginTop: 4 }}>
-                {activity.owner_username ?? "athlete"} · {new Date(activity.created_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                <Link to={`/users/${activity.owner_id}`} style={{ color: "#fff" }}>
+                  {activity.owner_username ?? "athlete"}
+                </Link>
+                {" · "}
+                {new Date(activity.created_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
               </p>
             </div>
             {isOwner && (
@@ -172,12 +192,12 @@ export default function ActivityDetail() {
         <div style={{ padding: "16px 24px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 16 }}>
           {!isOwner ? (
             <button
-              className={`kudos-btn${kudosMutation.isSuccess ? " active" : ""}`}
+              className={`kudos-btn${hasKudos ? " active" : ""}`}
               onClick={() => kudosMutation.mutate()}
               disabled={kudosMutation.isPending}
             >
               <KudosIcon size={16} color="currentColor" />
-              Give Kudos ({activity.kudos_count})
+              {hasKudos ? "Kudos Given" : "Give Kudos"} ({activity.kudos_count})
             </button>
           ) : (
             <span className="kudos-btn active" style={{ cursor: "default" }}>

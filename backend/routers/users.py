@@ -124,7 +124,7 @@ def list_user_activities(
     if sport_type:
         query = query.filter(Activity.sport_type == sport_type)
     activities = query.order_by(Activity.created_at.desc()).offset(offset).limit(limit).all()
-    return [{**a.__dict__, "kudos_count": len(a.kudos)} for a in activities]
+    return [{**a.__dict__, "kudos_count": len(a.kudos), "owner_username": a.owner.username, "user_has_kudos": any(k.user_id == current_user.id for k in a.kudos)} for a in activities]
 
 
 @router.post("/{user_id}/follow", status_code=201)

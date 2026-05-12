@@ -20,13 +20,16 @@ def give_kudos(activity_id: int, db: Session = Depends(get_db), current_user: Us
     db.add(Kudos(activity_id=activity_id, user_id=current_user.id))
     db.commit()
     db.refresh(activity)
-    return {"kudos_count": len(activity.kudos)}
+    return {"kudos_count": len(activity.kudos), "user_has_kudos": True}
 
 
-@router.delete("/{activity_id}/kudos", status_code=204)
+@router.delete("/{activity_id}/kudos")
 def remove_kudos(activity_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     kudos = db.query(Kudos).filter(Kudos.activity_id == activity_id, Kudos.user_id == current_user.id).first()
     if not kudos:
         raise HTTPException(status_code=404, detail="Kudos not found")
+    activity = activity_service.get_activity(db, activity_id, current_user.id)
     db.delete(kudos)
     db.commit()
+    db.refresh(activity)
+    return {"kudos_count": len(activity.kudos) if activity else 0, "user_has_kudos": False}

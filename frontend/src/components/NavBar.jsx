@@ -41,9 +41,19 @@ export default function NavBar() {
             <NavLink to="/segments" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
               <span>Segments</span>
             </NavLink>
-            <button className="nav-add-btn" onClick={() => navigate("/log")} title="Log Activity">
-              +
-            </button>
+            <div className="nav-add-group">
+              <button className="nav-add-btn" onClick={() => navigate("/log")} title="Log Activity">
+                +
+              </button>
+              <div className="nav-add-dropdown">
+                <button className="nav-add-dropdown-item" onClick={() => navigate("/log")}>
+                  Log Activity
+                </button>
+                <button className="nav-add-dropdown-item" onClick={() => navigate("/segments/new")}>
+                  New Segment
+                </button>
+              </div>
+            </div>
 
             <div className="nav-user">
               <Link to="/profile" className="nav-avatar-link" title="Profile">

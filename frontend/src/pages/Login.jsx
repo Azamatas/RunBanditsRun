@@ -14,8 +14,8 @@ export default function Login() {
 
   const mutation = useMutation({
     mutationFn: login,
-    onSuccess: async ({ access_token }) => {
-      saveToken(access_token);
+    onSuccess: async ({ access_token, refresh_token }) => {
+      saveToken(access_token, refresh_token);
       const me = await getMe();
       setUser(me);
       navigate("/feed");
