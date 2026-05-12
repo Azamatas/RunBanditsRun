@@ -44,14 +44,15 @@ def list_activities(
     )
     if sport_type:
         query = query.filter(Activity.sport_type == sport_type)
-    return query.order_by(Activity.created_at.desc()).offset(offset).limit(limit).all()
+    activities = query.order_by(Activity.created_at.desc()).offset(offset).limit(limit).all()
+    return [{**a.__dict__, "kudos_count": len(a.kudos), "owner_username": a.owner.username, "user_has_kudos": any(k.user_id == current_user.id for k in a.kudos)} for a in activities]
 
 
 @router.post("/", response_model=ActivityOut)
 def create_activity(body: ActivityCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     data = body.model_dump(exclude={"tagged_athlete_ids"})
     activity = activity_service.create_activity(db, current_user.id, data, body.tagged_athlete_ids)
-    return {**activity.__dict__, "kudos_count": len(activity.kudos)}
+    return {**activity.__dict__, "kudos_count": len(activity.kudos), "owner_username": activity.owner.username, "user_has_kudos": False}
 
 
 @router.get("/{activity_id}", response_model=ActivityOut)
@@ -59,7 +60,7 @@ def get_activity(activity_id: int, db: Session = Depends(get_db), current_user: 
     activity = activity_service.get_activity(db, activity_id, current_user.id)
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found or not visible")
-    return {**activity.__dict__, "kudos_count": len(activity.kudos)}
+    return {**activity.__dict__, "kudos_count": len(activity.kudos), "owner_username": activity.owner.username, "user_has_kudos": any(k.user_id == current_user.id for k in activity.kudos)}
 
 
 @router.patch("/{activity_id}", response_model=ActivityOut)
@@ -67,7 +68,7 @@ def update_activity(activity_id: int, body: ActivityUpdate, db: Session = Depend
     activity = activity_service.update_activity(db, activity_id, current_user.id, body.model_dump(exclude_none=True))
     if not activity:
         raise HTTPException(status_code=404, detail="Activity not found")
-    return {**activity.__dict__, "kudos_count": len(activity.kudos)}
+    return {**activity.__dict__, "kudos_count": len(activity.kudos), "owner_username": activity.owner.username, "user_has_kudos": any(k.user_id == current_user.id for k in activity.kudos)}
 
 
 @router.delete("/{activity_id}", status_code=204)

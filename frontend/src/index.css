@@ -433,6 +433,48 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .nav-add-btn:hover { background: var(--accent-hover); transform: scale(1.08); }
 
+.nav-add-group {
+  position: relative;
+  margin-left: 8px;
+}
+
+.nav-add-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.nav-add-group:hover .nav-add-dropdown {
+  display: block;
+}
+
+.nav-add-dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  color: var(--text);
+  transition: background var(--duration) var(--ease);
+}
+
+.nav-add-dropdown-item:hover {
+  background: var(--gray-50);
+}
+
 .nav-avatar-link {
   text-decoration: none;
   border-radius: 50%;
@@ -461,7 +503,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
    ============================================ */
 
 .auth-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   background: var(--bg);
 }

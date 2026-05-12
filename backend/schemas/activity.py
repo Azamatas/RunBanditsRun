@@ -18,6 +18,7 @@ class ActivityCreate(BaseModel):
 class ActivityOut(BaseModel):
     id: int
     owner_id: int
+    owner_username: str | None = None
     title: str
     sport_type: SportType
     distance: float | None
@@ -28,6 +29,7 @@ class ActivityOut(BaseModel):
     started_at: datetime | None
     created_at: datetime
     kudos_count: int = 0
+    user_has_kudos: bool = False
 
     model_config = {"from_attributes": True}
 

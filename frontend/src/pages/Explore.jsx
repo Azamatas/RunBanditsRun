@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { searchUsers, getFollowing, getPendingRequests, getSentRequests, followUser, acceptFollow } from "../api/users";
+import { searchUsers, getFollowing, getPendingRequests, getSentRequests, followUser, acceptFollow, unfollowUser } from "../api/users";
 import UserCard from "../components/UserCard";
 import { SearchIcon } from "../components/SportIcon";
 import { HERO_IMAGES } from "../constants/images";
@@ -49,6 +49,14 @@ export default function Explore() {
       qc.invalidateQueries({ queryKey: ["following"] });
       qc.invalidateQueries({ queryKey: ["pendingRequests"] });
       qc.invalidateQueries({ queryKey: ["sentRequests"] });
+      qc.invalidateQueries({ queryKey: ["searchUsers"] });
+    },
+  });
+
+  const unfollowMutation = useMutation({
+    mutationFn: unfollowUser,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["following"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
@@ -110,7 +118,8 @@ export default function Explore() {
           status={getStatus(u.id)}
           onFollow={() => followMutation.mutate(u.id)}
           onAccept={() => acceptMutation.mutate(u.id)}
-          loading={followMutation.isPending}
+          onUnfollow={() => unfollowMutation.mutate(u.id)}
+          loading={followMutation.isPending || unfollowMutation.isPending}
         />
       ))}
     </div>

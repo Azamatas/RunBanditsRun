@@ -35,9 +35,29 @@ export default function ActivityCard({ activity, queryKey, style }) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
+  const hasKudos = activity.user_has_kudos ?? false;
+
   const kudosMutation = useMutation({
-    mutationFn: () => giveKudos(activity.id),
-    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    mutationFn: () => hasKudos ? removeKudos(activity.id) : giveKudos(activity.id),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData(queryKey);
+      qc.setQueryData(queryKey, (old) => {
+        if (!old) return old;
+        return old.map((a) =>
+          a.id === activity.id
+            ? { ...a, user_has_kudos: !hasKudos, kudos_count: hasKudos ? a.kudos_count - 1 : a.kudos_count + 1 }
+            : a
+        );
+      });
+      return { prev };
+    },
+    onError: (err, vars, context) => {
+      if (context?.prev) qc.setQueryData(queryKey, context.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey });
+    },
   });
 
   const isOwner = user?.id === activity.owner_id;
@@ -63,11 +83,13 @@ export default function ActivityCard({ activity, queryKey, style }) {
 
       <div className="activity-card-body">
         <div className="activity-card-header">
-          <div className="avatar avatar-sm" style={{ background: avatarColor(activity.owner_id) }}>
+          <Link to={`/users/${activity.owner_id}`} className="avatar avatar-sm" style={{ background: avatarColor(activity.owner_id), textDecoration: "none" }}>
             {username[0].toUpperCase()}
-          </div>
+          </Link>
           <div className="activity-card-user">
-            <span className="activity-card-username">{username}</span>
+            <Link to={`/users/${activity.owner_id}`} style={{ textDecoration: "none", color: "inherit" }}>
+              <span className="activity-card-username">{username}</span>
+            </Link>
             <span className="activity-card-meta">
               <span>{timeAgo(activity.created_at)}</span>
             </span>
@@ -108,12 +130,12 @@ export default function ActivityCard({ activity, queryKey, style }) {
         <div className="activity-card-footer">
           {!isOwner ? (
             <button
-              className={`kudos-btn${kudosMutation.isSuccess ? " active" : ""}`}
+              className={`kudos-btn${hasKudos ? " active" : ""}`}
               onClick={() => kudosMutation.mutate()}
               disabled={kudosMutation.isPending}
             >
               <KudosIcon size={16} color="currentColor" />
-              <span>Kudos</span>
+              <span>{hasKudos ? "Un-kudos" : "Kudos"}</span>
               <span>({activity.kudos_count})</span>
             </button>
           ) : (

@@ -12,16 +12,21 @@ export function AuthProvider({ children }) {
     if (!token) { setLoading(false); return; }
     getMe()
       .then(setUser)
-      .catch(() => localStorage.removeItem("token"))
+      .catch(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  function saveToken(token) {
-    localStorage.setItem("token", token);
+  function saveToken(access_token, refresh_token) {
+    localStorage.setItem("token", access_token);
+    if (refresh_token) localStorage.setItem("refresh_token", refresh_token);
   }
 
   function logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh_token");
     setUser(null);
   }
 
