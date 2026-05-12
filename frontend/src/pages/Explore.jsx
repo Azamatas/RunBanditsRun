@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { searchUsers, getFollowing, getPendingRequests, followUser, acceptFollow } from "../api/users";
+import { searchUsers, getFollowing, getPendingRequests, getSentRequests, followUser, acceptFollow } from "../api/users";
 import UserCard from "../components/UserCard";
 import { SearchIcon } from "../components/SportIcon";
 import { HERO_IMAGES } from "../constants/images";
@@ -25,13 +25,20 @@ export default function Explore() {
     queryFn: getPendingRequests,
   });
 
+  const { data: sentRequests } = useQuery({
+    queryKey: ["sentRequests"],
+    queryFn: getSentRequests,
+  });
+
   const followingIds = new Set((following ?? []).map((u) => u.id));
   const pendingIncomingIds = new Set((pendingRequests ?? []).map((r) => r.requester_id));
+  const pendingOutgoingIds = new Set((sentRequests ?? []).map((r) => r.addressee_id));
 
   const followMutation = useMutation({
     mutationFn: followUser,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["following"] });
+      qc.invalidateQueries({ queryKey: ["sentRequests"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
@@ -41,6 +48,7 @@ export default function Explore() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["following"] });
       qc.invalidateQueries({ queryKey: ["pendingRequests"] });
+      qc.invalidateQueries({ queryKey: ["sentRequests"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
@@ -48,6 +56,7 @@ export default function Explore() {
   function getStatus(userId) {
     if (followingIds.has(userId)) return "accepted";
     if (pendingIncomingIds.has(userId)) return "incoming";
+    if (pendingOutgoingIds.has(userId)) return "pending";
     return null;
   }
 

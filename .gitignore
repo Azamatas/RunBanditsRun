@@ -35,3 +35,6 @@ Desktop.ini
 
 # Build output
 *.db
+
+# MCP
+.playwright-mcp/

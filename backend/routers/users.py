@@ -58,6 +58,32 @@ def list_pending_requests(db: Session = Depends(get_db), current_user: User = De
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 
+@router.get("/me/requests")
+def list_pending_requests_detailed(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    friendships = db.query(Friendship).filter(
+        Friendship.addressee_id == current_user.id,
+        Friendship.status == FriendshipStatus.PENDING
+    ).all()
+    return [{"id": f.id, "requester_id": f.requester_id, "requester": UserOut.model_validate(db.query(User).filter(User.id == f.requester_id).first()), "status": f.status.value, "created_at": f.created_at.isoformat() if f.created_at else None} for f in friendships]
+
+
+@router.get("/me/sent-requests")
+def list_sent_requests(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    friendships = db.query(Friendship).filter(
+        Friendship.requester_id == current_user.id,
+        Friendship.status == FriendshipStatus.PENDING
+    ).all()
+    return [{"id": f.id, "addressee_id": f.addressee_id, "status": f.status.value} for f in friendships]
+
+
+@router.get("/search")
+def search_users(q: str = "", db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    query = db.query(User).filter(User.id != current_user.id)
+    if q:
+        query = query.filter(User.username.ilike(f"%{q}%"))
+    return query.limit(50).all()
+
+
 @router.get("/{user_id}", response_model=UserOut)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
