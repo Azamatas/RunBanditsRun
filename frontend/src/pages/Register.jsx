@@ -15,6 +15,15 @@ function apiError(err, fallback) {
   return fallback;
 }
 
+function passwordError(pw) {
+  if (pw.length < 8) return "At least 8 characters";
+  if (pw.length > 72) return "At most 72 characters";
+  if (!/[A-Z]/.test(pw)) return "At least one uppercase letter";
+  if (!/[a-z]/.test(pw)) return "At least one lowercase letter";
+  if (!/\d/.test(pw)) return "At least one number";
+  return null;
+}
+
 export default function Register() {
   const { saveToken, setUser } = useAuth();
   const navigate = useNavigate();
@@ -30,8 +39,11 @@ export default function Register() {
     },
   });
 
+  const pwError = form.password ? passwordError(form.password) : null;
+
   function handleSubmit(e) {
     e.preventDefault();
+    if (passwordError(form.password)) return;
     mutation.mutate(form);
   }
 
@@ -89,15 +101,19 @@ export default function Register() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Choose a strong password"
                   autoComplete="new-password"
+                  maxLength={72}
                   required
                 />
+                {pwError && (
+                  <span style={{ fontSize: "var(--text-xs)", color: "var(--danger)" }}>{pwError}</span>
+                )}
               </div>
 
               {mutation.isError && (
                 <div className="error">{apiError(mutation.error, "Registration failed")}</div>
               )}
 
-              <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>
+              <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending || !!pwError}>
                 {mutation.isPending ? (
                   <><div className="spinner" /> Creating account...</>
                 ) : (
