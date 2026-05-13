@@ -35,6 +35,20 @@ def decode_token(token: str) -> dict:
     return payload
 
 
+def decode_access_token(token: str) -> dict:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    if payload.get("type") != "access":
+        raise ValueError("Invalid token type: expected access")
+    return payload
+
+
+def decode_refresh_token(token: str) -> dict:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    if payload.get("type") != "refresh":
+        raise ValueError("Invalid token type: expected refresh")
+    return payload
+
+
 def get_user_by_email(db: Session, email: str) -> User | None:
     return db.query(User).filter(User.email == email).first()
 

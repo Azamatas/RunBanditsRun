@@ -10,12 +10,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
     try:
-        payload = auth_service.decode_token(token)
+        payload = auth_service.decode_access_token(token)
         user_id = int(payload["sub"])
-        if payload.get("type") not in ("access", None):
-            raise HTTPException(status_code=401, detail="Invalid token type")
-    except HTTPException:
-        raise
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid token type")
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     user = auth_service.get_user_by_id(db, user_id)

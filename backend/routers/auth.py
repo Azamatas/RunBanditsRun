@@ -33,10 +33,8 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/refresh", response_model=TokenResponse)
 def refresh_token(body: RefreshTokenRequest):
     try:
-        payload = auth_service.decode_token(body.refresh_token)
+        payload = auth_service.decode_refresh_token(body.refresh_token)
     except Exception:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-    if payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     user_id = int(payload["sub"])
     return TokenResponse(
