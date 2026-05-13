@@ -82,10 +82,8 @@ export default function Profile() {
       {editing && <EditProfileModal onClose={() => setEditing(false)} />}
 
       {/* Profile hero with cover photo */}
-      <div className="card-flush" style={{ marginBottom: 20 }}>
-        <div className="profile-cover" style={{ backgroundImage: `url(${HERO_IMAGES.profile})` }}>
-          <div className="profile-cover-overlay" />
-        </div>
+      <div className="card-flush profile-card" style={{ backgroundImage: `url(${HERO_IMAGES.profile})`, marginBottom: 20 }}>
+        <div className="profile-cover-overlay" />
         <div className="profile-hero">
           <div className="avatar avatar-xl profile-avatar" style={{ background: avatarColor(user?.id ?? 0) }}>
             {user?.username?.[0]?.toUpperCase()}
