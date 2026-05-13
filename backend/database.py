@@ -1,16 +1,10 @@
-from sqlalchemy import create_engine, event
+import os
+from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATABASE_URL = "sqlite:///./runbandits.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://runbandits:runbandits@localhost:5432/runbandits")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-
-
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 

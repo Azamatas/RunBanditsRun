@@ -1,6 +1,6 @@
 # Backend
 
-FastAPI REST API with SQLAlchemy ORM and SQLite.
+FastAPI REST API with SQLAlchemy ORM and PostgreSQL.
 
 ## Architecture
 
@@ -43,11 +43,30 @@ backend/
 - **Auth:** JWT access + refresh tokens. `deps.get_current_user` extracts user from `Authorization: Bearer <token>`.
 - **Services:** Business logic lives in `services/`, not in routers. Routers handle HTTP and call services.
 - **Schemas:** Pydantic models validate input and shape output. `ActivityOut` includes `owner_username` and `user_has_kudos`.
-- **Database:** SQLite via SQLAlchemy. Auto-created on startup (`Base.metadata.create_all`).
+- **Database:** PostgreSQL via SQLAlchemy. Schema is managed by `init_db.sql` (run via `docker compose` or manually). Tests use the same database with transaction rollback isolation.
 
 ## Environment variables
 
 | Variable | Default | Description |
 |---|---|---|
+| `DATABASE_URL` | `postgresql://runbandits:runbandits@localhost:5432/runbandits` | PostgreSQL connection string (used by both app and tests) |
 | `JWT_SECRET_KEY` | `change-me-in-production` | Secret for signing JWTs |
 | `ALLOWED_ORIGINS` | `http://localhost:5173` | CORS origins (comma-separated, or `*`) |
+
+## Getting started
+
+```bash
+# Start PostgreSQL
+docker compose up -d
+
+# The init_db.sql script runs automatically and creates the schema.
+
+# Install dependencies
+pip install -r backend/requirements.txt
+
+# Run tests
+pytest backend/tests/ -v
+
+# Start the server
+uvicorn backend.main:app --reload
+```
