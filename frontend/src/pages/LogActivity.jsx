@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { createActivity } from "../api/activities";
 import { getFollowing } from "../api/users";
 import SportIcon from "../components/SportIcon";
+import RouteBuilder from "../components/RouteBuilder";
 import { SPORT_THUMBNAILS } from "../constants/images";
 
 const SPORTS = [
@@ -195,8 +196,12 @@ export default function LogActivity() {
           </div>
 
           <div className="form-group">
-            <label>Route Polyline <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
-            <input value={form.polyline} onChange={set("polyline")} placeholder="Paste encoded route string" />
+            <label>Route <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
+            <RouteBuilder
+              onChange={(polyline) => setForm((f) => ({ ...f, polyline }))}
+              onDistance={(km) => setForm((f) => ({ ...f, distance: km > 0 ? km.toFixed(2) : f.distance }))}
+              onDuration={(min) => setForm((f) => ({ ...f, duration: min > 0 ? String(Math.round(min)) : f.duration }))}
+            />
           </div>
 
           {mutation.isError && (

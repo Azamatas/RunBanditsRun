@@ -413,6 +413,16 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .nav-link:hover { color: var(--text); background: var(--gray-100); }
 .nav-link.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
 
+.nav-log-btn {
+  background: var(--accent);
+  color: #fff !important;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  margin-left: 4px;
+}
+.nav-log-btn:hover { background: var(--accent-hover) !important; color: #fff !important; }
+.nav-log-btn.active { background: var(--accent-hover) !important; color: #fff !important; }
+
 .nav-add-btn {
   width: 36px;
   height: 36px;
@@ -1239,6 +1249,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border);
+  isolation: isolate;
 }
 
 .map-container .leaflet-container {
