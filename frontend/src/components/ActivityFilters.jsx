@@ -4,7 +4,6 @@ const SPORTS = [
   { value: "all", label: "All" },
   { value: "run", label: "Run" },
   { value: "ride", label: "Ride" },
-  { value: "swim", label: "Swim" },
   { value: "walk", label: "Walk" },
   { value: "hike", label: "Hike" },
 ];

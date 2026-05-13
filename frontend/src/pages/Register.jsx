@@ -7,6 +7,14 @@ import { useAuth } from "../context/AuthContext";
 import { LogoIcon } from "../components/SportIcon";
 import { HERO_IMAGES } from "../constants/images";
 
+function apiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => e.msg).join(", ");
+  return fallback;
+}
+
 export default function Register() {
   const { saveToken, setUser } = useAuth();
   const navigate = useNavigate();
@@ -86,7 +94,7 @@ export default function Register() {
               </div>
 
               {mutation.isError && (
-                <div className="error">{mutation.error?.response?.data?.detail ?? "Registration failed"}</div>
+                <div className="error">{apiError(mutation.error, "Registration failed")}</div>
               )}
 
               <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>

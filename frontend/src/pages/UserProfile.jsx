@@ -20,7 +20,6 @@ function avatarColor(id) {
 const SPORT_LABELS = {
   run: "Running",
   ride: "Cycling",
-  swim: "Swimming",
   walk: "Walking",
   hike: "Hiking",
 };
@@ -28,7 +27,6 @@ const SPORT_LABELS = {
 const SPORT_COLORS = {
   run: "var(--sport-run)",
   ride: "var(--sport-ride)",
-  swim: "var(--sport-swim)",
   walk: "var(--sport-walk)",
   hike: "var(--sport-hike)",
 };

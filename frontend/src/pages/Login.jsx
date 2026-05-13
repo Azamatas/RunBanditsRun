@@ -7,6 +7,14 @@ import { useAuth } from "../context/AuthContext";
 import { LogoIcon } from "../components/SportIcon";
 import { HERO_IMAGES } from "../constants/images";
 
+function apiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => e.msg).join(", ");
+  return fallback;
+}
+
 export default function Login() {
   const { saveToken, setUser } = useAuth();
   const navigate = useNavigate();
@@ -34,7 +42,7 @@ export default function Login() {
           <div className="auth-hero-content">
             <LogoIcon size={48} />
             <h2>Run further. Push harder. Track everything.</h2>
-            <p>Join thousands of athletes logging their runs, rides, swims, and more.</p>
+            <p>Join thousands of athletes logging their runs, rides, hikes, and more.</p>
           </div>
         </div>
       </div>
@@ -73,7 +81,7 @@ export default function Login() {
               </div>
 
               {mutation.isError && (
-                <div className="error">{mutation.error?.response?.data?.detail ?? "Login failed"}</div>
+                <div className="error">{apiError(mutation.error, "Login failed")}</div>
               )}
 
               <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending}>

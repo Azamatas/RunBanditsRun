@@ -1,7 +1,6 @@
 export const SPORT_IMAGES = {
   run: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=400&fit=crop&crop=center",
   ride: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=400&fit=crop&crop=center",
-  swim: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&h=400&fit=crop&crop=center",
   walk: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&h=400&fit=crop&crop=center",
   hike: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=400&fit=crop&crop=center",
 };
@@ -9,7 +8,6 @@ export const SPORT_IMAGES = {
 export const SPORT_THUMBNAILS = {
   run: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&h=200&fit=crop&crop=center",
   ride: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&h=200&fit=crop&crop=center",
-  swim: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=200&fit=crop&crop=center",
   walk: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=400&h=200&fit=crop&crop=center",
   hike: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=200&fit=crop&crop=center",
 };

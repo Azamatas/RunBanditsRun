@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createActivity } from "../api/activities";
@@ -9,26 +9,42 @@ import { SPORT_THUMBNAILS } from "../constants/images";
 const SPORTS = [
   { value: "run", label: "Run" },
   { value: "ride", label: "Ride" },
-  { value: "swim", label: "Swim" },
   { value: "walk", label: "Walk" },
   { value: "hike", label: "Hike" },
 ];
 
 const VISIBILITIES = ["public", "friends", "private"];
 
+const DRAFT_KEY = "log_activity_draft";
+const DEFAULT_FORM = {
+  title: "",
+  sport_type: "run",
+  distance: "",
+  duration: "",
+  elevation: "",
+  visibility: "public",
+  polyline: "",
+};
+
+function loadDraft() {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function LogActivity() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    title: "",
-    sport_type: "run",
-    distance: "",
-    duration: "",
-    elevation: "",
-    visibility: "public",
-    polyline: "",
-  });
-  const [taggedIds, setTaggedIds] = useState([]);
+  const draft = loadDraft();
+  const [form, setForm] = useState({ ...DEFAULT_FORM, ...(draft?.form ?? {}) });
+  const [taggedIds, setTaggedIds] = useState(draft?.taggedIds ?? []);
   const [tagSearch, setTagSearch] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, taggedIds }));
+  }, [form, taggedIds]);
 
   const { data: following } = useQuery({
     queryKey: ["following"],
@@ -37,7 +53,10 @@ export default function LogActivity() {
 
   const mutation = useMutation({
     mutationFn: createActivity,
-    onSuccess: (activity) => navigate(`/activities/${activity.id}`),
+    onSuccess: (activity) => {
+      localStorage.removeItem(DRAFT_KEY);
+      navigate(`/activities/${activity.id}`);
+    },
   });
 
   function set(field) {
@@ -112,7 +131,7 @@ export default function LogActivity() {
             </div>
             <div className="form-group">
               <label>Elevation (m)</label>
-              <input type="number" min="0" value={form.elevation} onChange={set("elevation")} placeholder="120" />
+              <input type="number" value={form.elevation} onChange={set("elevation")} placeholder="120" />
             </div>
           </div>
 

@@ -7,7 +7,7 @@ import SportIcon, { KudosIcon } from "../components/SportIcon";
 import { SPORT_IMAGES } from "../constants/images";
 
 const SPORT_COLORS = {
-  run: "var(--sport-run)", ride: "var(--sport-ride)", swim: "var(--sport-swim)",
+  run: "var(--sport-run)", ride: "var(--sport-ride)",
   walk: "var(--sport-walk)", hike: "var(--sport-hike)",
 };
 const AVATAR_COLORS = ["#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48", "#0d9488", "#a16207", "#6d28d9"];

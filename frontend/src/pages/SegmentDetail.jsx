@@ -5,7 +5,7 @@ import MapView from "../components/MapView";
 import LeaderboardTable from "../components/LeaderboardTable";
 
 const SPORT_COLORS = {
-  run: "var(--sport-run)", ride: "var(--sport-ride)", swim: "var(--sport-swim)",
+  run: "var(--sport-run)", ride: "var(--sport-ride)",
   walk: "var(--sport-walk)", hike: "var(--sport-hike)",
 };
 
