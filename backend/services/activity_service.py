@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, select
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
 
@@ -74,17 +74,15 @@ def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
 
 
 def list_activities(db: Session, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict]:
-    friend_ids_subquery = db.query(
-        Friendship.addressee_id
-    ).filter(
+    friend_ids_subquery = select(Friendship.addressee_id).where(
         Friendship.requester_id == viewer_id,
         Friendship.status == FriendshipStatus.ACCEPTED
     ).union(
-        db.query(Friendship.requester_id).filter(
+        select(Friendship.requester_id).where(
             Friendship.addressee_id == viewer_id,
             Friendship.status == FriendshipStatus.ACCEPTED
         )
-    ).subquery()
+    )
     query = db.query(Activity).filter(
         or_(
             Activity.visibility == Visibility.PUBLIC,

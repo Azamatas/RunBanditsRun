@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 from backend.database import Base, get_db
@@ -14,6 +14,14 @@ MOCK_HASH = "$2b$12$fakehashfakehashfakehashfakehashfake"
 SQLALCHEMY_DATABASE_URL = "sqlite:///test.db"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+
+
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -37,6 +45,15 @@ def db():
     transaction = connection.begin()
     Session = sessionmaker(bind=connection)
     session = Session()
+
+    nested = connection.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(session, trans):
+        nonlocal nested
+        if not nested.is_active:
+            nested = connection.begin_nested()
+
     yield session
     session.close()
     transaction.rollback()

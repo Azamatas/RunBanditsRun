@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from backend.models.user import User
 from backend.models.friendship import Friendship, FriendshipStatus
 from backend.models.activity import Activity, Visibility
@@ -23,26 +23,26 @@ def update_user(db: Session, current_user: User, updates: dict) -> User:
 
 
 def get_followers(db: Session, user_id: int) -> list[User]:
-    requester_ids = db.query(Friendship.requester_id).filter(
+    requester_ids = select(Friendship.requester_id).where(
         Friendship.addressee_id == user_id,
         Friendship.status == FriendshipStatus.ACCEPTED
-    ).subquery()
+    )
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 
 def get_following(db: Session, user_id: int) -> list[User]:
-    addressee_ids = db.query(Friendship.addressee_id).filter(
+    addressee_ids = select(Friendship.addressee_id).where(
         Friendship.requester_id == user_id,
         Friendship.status == FriendshipStatus.ACCEPTED
-    ).subquery()
+    )
     return db.query(User).filter(User.id.in_(addressee_ids)).all()
 
 
 def get_pending_requests(db: Session, user_id: int) -> list[User]:
-    requester_ids = db.query(Friendship.requester_id).filter(
+    requester_ids = select(Friendship.requester_id).where(
         Friendship.addressee_id == user_id,
         Friendship.status == FriendshipStatus.PENDING
-    ).subquery()
+    )
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 

@@ -1,8 +1,14 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Text, Float, Integer, ForeignKey, DateTime, Enum, Table, Column
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
+
+if TYPE_CHECKING:
+    from backend.models.user import User
+    from backend.models.kudos import Kudos
+    from backend.models.segment import SegmentEffort
 
 
 class SportType(str, enum.Enum):
@@ -40,7 +46,7 @@ class Activity(Base):
     polyline: Mapped[str | None] = mapped_column(Text)
     visibility: Mapped[Visibility] = mapped_column(Enum(Visibility), default=Visibility.PUBLIC)
     started_at: Mapped[datetime | None] = mapped_column(DateTime)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     owner: Mapped["User"] = relationship("User", foreign_keys=[owner_id], back_populates="activities")
     tagged_athletes: Mapped[list["User"]] = relationship("User", secondary=activity_athletes)

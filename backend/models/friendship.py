@@ -1,8 +1,12 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, DateTime, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
+
+if TYPE_CHECKING:
+    from backend.models.user import User
 
 
 class FriendshipStatus(str, enum.Enum):
@@ -17,7 +21,7 @@ class Friendship(Base):
     requester_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     addressee_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     status: Mapped[FriendshipStatus] = mapped_column(Enum(FriendshipStatus), default=FriendshipStatus.PENDING)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     requester: Mapped["User"] = relationship("User", foreign_keys=[requester_id], back_populates="sent_requests")
     addressee: Mapped["User"] = relationship("User", foreign_keys=[addressee_id], back_populates="received_requests")

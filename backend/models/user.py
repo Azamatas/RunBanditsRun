@@ -1,7 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
+
+if TYPE_CHECKING:
+    from backend.models.activity import Activity
+    from backend.models.friendship import Friendship
+    from backend.models.kudos import Kudos
 
 
 class User(Base):
@@ -13,7 +19,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     bio: Mapped[str | None] = mapped_column(Text)
     location: Mapped[str | None] = mapped_column(String(100))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     activities: Mapped[list["Activity"]] = relationship("Activity", back_populates="owner", foreign_keys="Activity.owner_id")
     sent_requests: Mapped[list["Friendship"]] = relationship("Friendship", foreign_keys="Friendship.requester_id", back_populates="requester")
