@@ -40,6 +40,16 @@ pip install -r backend/requirements-dev.txt
 mypy backend
 ```
 
+## Linting
+
+```bash
+# Run ruff
+ruff check backend
+
+# Auto-fix issues
+ruff check --fix backend
+```
+
 ## Pre-commit Hooks (Optional)
 
 ```bash

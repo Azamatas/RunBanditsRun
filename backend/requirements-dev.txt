@@ -1,5 +1,6 @@
 -r requirements.txt
 mypy
+ruff
 python-jose[cryptography]
 types-python-jose
 types-psycopg2
