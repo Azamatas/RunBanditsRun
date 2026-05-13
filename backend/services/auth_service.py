@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import os
+from sqlalchemy.exc import IntegrityError
 import bcrypt
 from jose import jwt
 from sqlalchemy.orm import Session
@@ -42,9 +43,20 @@ def get_user_by_username(db: Session, username: str) -> User | None:
     return db.query(User).filter(User.username == username).first()
 
 
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    return db.query(User).filter(User.id == user_id).first()
+
+
 def register_user(db: Session, username: str, email: str, password: str) -> User:
     user = User(username=username, email=email, password_hash=hash_password(password))
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as e:
+        db.rollback()
+        msg = str(e.orig) if e.orig else ""
+        if "email" in msg.lower():
+            raise ValueError("Email already registered")
+        raise ValueError("Username already taken")
     db.refresh(user)
     return user

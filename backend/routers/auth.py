@@ -9,11 +9,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=TokenResponse)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
-    if auth_service.get_user_by_email(db, body.email):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    if auth_service.get_user_by_username(db, body.username):
-        raise HTTPException(status_code=400, detail="Username already taken")
-    user = auth_service.register_user(db, body.username, body.email, body.password)
+    try:
+        user = auth_service.register_user(db, body.username, body.email, body.password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return TokenResponse(
         access_token=auth_service.create_access_token(user.id),
         refresh_token=auth_service.create_refresh_token(user.id),

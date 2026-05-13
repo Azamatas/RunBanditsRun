@@ -16,5 +16,4 @@ def get_feed(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    activities = feed_service.get_feed(db, current_user.id, limit, offset)
-    return [{**a.__dict__, "kudos_count": len(a.kudos), "owner_username": a.owner.username, "user_has_kudos": any(k.user_id == current_user.id for k in a.kudos)} for a in activities]
+    return feed_service.get_feed(db, current_user.id, limit, offset)

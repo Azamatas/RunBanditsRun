@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
 
@@ -21,6 +22,15 @@ def can_view(db: Session, activity: Activity, viewer_id: int | None) -> bool:
     if activity.visibility == Visibility.FRIENDS:
         return _is_friend(db, viewer_id, activity.owner_id)
     return False
+
+
+def enrich_activity(activity: Activity, user_id: int) -> dict:
+    return {
+        **activity.__dict__,
+        "kudos_count": len(activity.kudos),
+        "owner_username": activity.owner.username,
+        "user_has_kudos": any(k.user_id == user_id for k in activity.kudos),
+    }
 
 
 def create_activity(db: Session, owner_id: int, data: dict, tagged_ids: list[int]) -> Activity:
@@ -61,3 +71,31 @@ def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
     db.delete(activity)
     db.commit()
     return True
+
+
+def list_activities(db: Session, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict]:
+    friend_ids_subquery = db.query(
+        Friendship.addressee_id
+    ).filter(
+        Friendship.requester_id == viewer_id,
+        Friendship.status == FriendshipStatus.ACCEPTED
+    ).union(
+        db.query(Friendship.requester_id).filter(
+            Friendship.addressee_id == viewer_id,
+            Friendship.status == FriendshipStatus.ACCEPTED
+        )
+    ).subquery()
+    query = db.query(Activity).filter(
+        or_(
+            Activity.visibility == Visibility.PUBLIC,
+            Activity.owner_id == viewer_id,
+            and_(
+                Activity.visibility == Visibility.FRIENDS,
+                Activity.owner_id.in_(friend_ids_subquery)
+            )
+        )
+    )
+    if sport_type:
+        query = query.filter(Activity.sport_type == sport_type)
+    activities = query.order_by(Activity.created_at.desc()).offset(offset).limit(limit).all()
+    return [enrich_activity(a, viewer_id) for a in activities]
