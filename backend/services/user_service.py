@@ -117,7 +117,7 @@ def unfollow_user(db: Session, current_user_id: int, target_user_id: int) -> Non
     db.commit()
 
 
-def get_user_activities(db: Session, user_id: int, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict]:
+def get_user_activities(db: Session, user_id: int, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict] | None:
     from backend.services.activity_service import enrich_activity
     target = db.query(User).filter(User.id == user_id).first()
     if not target:

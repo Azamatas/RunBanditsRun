@@ -30,6 +30,23 @@ pytest backend/tests/
 cd frontend && npm run build
 ```
 
+## Type Checking
+
+```bash
+# Install dev dependencies
+pip install -r backend/requirements-dev.txt
+
+# Run mypy
+mypy backend
+```
+
+## Pre-commit Hooks (Optional)
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
 ## Project layout
 
 ```

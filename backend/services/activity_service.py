@@ -1,7 +1,45 @@
-from sqlalchemy.orm import Session
+from __future__ import annotations
+from sqlalchemy.orm import Session, selectinload, Query
+from sqlalchemy.sql.selectable import Select, CompoundSelect
 from sqlalchemy import or_, and_, select
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
+
+
+def _query_activities_with_relations(db: Session) -> Query[Activity]:
+    """Return a query with owner and kudos eager-loaded."""
+    return db.query(Activity).options(
+        selectinload(Activity.owner),
+        selectinload(Activity.kudos)
+    )
+
+
+def _get_friend_ids_subquery(viewer_id: int) -> CompoundSelect[tuple[int]]:
+    """Build subquery for getting friend IDs of a user."""
+    return select(Friendship.addressee_id).where(
+        Friendship.requester_id == viewer_id,
+        Friendship.status == FriendshipStatus.ACCEPTED
+    ).union(
+        select(Friendship.requester_id).where(
+            Friendship.addressee_id == viewer_id,
+            Friendship.status == FriendshipStatus.ACCEPTED
+        )
+    )
+
+
+def _filter_visible_activities(query: Query[Activity], viewer_id: int) -> Query[Activity]:
+    """Filter activities to only those visible to the viewer."""
+    friend_ids_subquery = _get_friend_ids_subquery(viewer_id)
+    return query.filter(
+        or_(
+            Activity.visibility == Visibility.PUBLIC,
+            Activity.owner_id == viewer_id,
+            and_(
+                Activity.visibility == Visibility.FRIENDS,
+                Activity.owner_id.in_(friend_ids_subquery)
+            )
+        )
+    )
 
 
 def _is_friend(db: Session, user_id: int, other_id: int) -> bool:
@@ -46,14 +84,14 @@ def create_activity(db: Session, owner_id: int, data: dict, tagged_ids: list[int
 
 
 def get_activity(db: Session, activity_id: int, viewer_id: int | None) -> Activity | None:
-    activity = db.query(Activity).filter(Activity.id == activity_id).first()
+    activity = _query_activities_with_relations(db).filter(Activity.id == activity_id).first()
     if activity and can_view(db, activity, viewer_id):
         return activity
     return None
 
 
 def update_activity(db: Session, activity_id: int, owner_id: int, updates: dict) -> Activity | None:
-    activity = db.query(Activity).filter(Activity.id == activity_id, Activity.owner_id == owner_id).first()
+    activity = _query_activities_with_relations(db).filter(Activity.id == activity_id, Activity.owner_id == owner_id).first()
     if not activity:
         return None
     for field, value in updates.items():
@@ -74,25 +112,8 @@ def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
 
 
 def list_activities(db: Session, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict]:
-    friend_ids_subquery = select(Friendship.addressee_id).where(
-        Friendship.requester_id == viewer_id,
-        Friendship.status == FriendshipStatus.ACCEPTED
-    ).union(
-        select(Friendship.requester_id).where(
-            Friendship.addressee_id == viewer_id,
-            Friendship.status == FriendshipStatus.ACCEPTED
-        )
-    )
-    query = db.query(Activity).filter(
-        or_(
-            Activity.visibility == Visibility.PUBLIC,
-            Activity.owner_id == viewer_id,
-            and_(
-                Activity.visibility == Visibility.FRIENDS,
-                Activity.owner_id.in_(friend_ids_subquery)
-            )
-        )
-    )
+    query = _query_activities_with_relations(db)
+    query = _filter_visible_activities(query, viewer_id)
     if sport_type:
         query = query.filter(Activity.sport_type == sport_type)
     activities = query.order_by(Activity.created_at.desc()).offset(offset).limit(limit).all()

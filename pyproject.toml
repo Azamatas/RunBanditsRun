@@ -1,0 +1,28 @@
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+# Strict mode - relaxed for SQLAlchemy 2.0 compatibility
+warn_unused_ignores = true
+disallow_any_unimported = false
+disallow_any_expr = false
+disallow_any_decorated = false
+disallow_any_generics = false
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+warn_no_return = true
+warn_redundant_casts = true
+
+# Paths
+mypy_path = "backend"
+
+[[tool.mypy.overrides]]
+module = "jose.*,psycopg2.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
