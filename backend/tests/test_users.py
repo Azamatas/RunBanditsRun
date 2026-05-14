@@ -1,4 +1,3 @@
-from backend.models.friendship import Friendship, FriendshipStatus
 
 
 class TestGetMe:

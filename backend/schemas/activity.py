@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Annotated
+
 from pydantic import BaseModel, Field
+
 from backend.models.activity import SportType, Visibility
 
 Int32 = Annotated[int, Field(ge=0, le=2147483647)]

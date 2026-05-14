@@ -1,12 +1,14 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
-from sqlalchemy import String, Text, Float, Integer, ForeignKey, DateTime
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from backend.database import Base
 
 if TYPE_CHECKING:
-    from backend.models.user import User
     from backend.models.activity import Activity
+    from backend.models.user import User
 
 
 class Segment(Base):

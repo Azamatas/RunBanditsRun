@@ -1,14 +1,15 @@
-import pytest
 import os
 from unittest.mock import patch
+
+import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from fastapi.testclient import TestClient
+
 from backend.database import get_db
 from backend.main import app
-from backend.services import auth_service
 from backend.models.user import User
-
+from backend.services import auth_service
 
 MOCK_HASH = "$2b$12$fakehashfakehashfakehashfakehashfake"
 
@@ -52,6 +53,7 @@ def db():
 def client(db):
     def override_get_db():
         yield db
+
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()

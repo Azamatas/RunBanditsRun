@@ -1,34 +1,34 @@
 from __future__ import annotations
-from sqlalchemy.orm import Session, selectinload, Query
-from sqlalchemy.sql.selectable import Select, CompoundSelect
-from sqlalchemy import or_, and_, select
+
+import logging
+
+from sqlalchemy import and_, or_, select
+from sqlalchemy.orm import Query, Session, selectinload
+from sqlalchemy.sql.selectable import CompoundSelect
+
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
 
+logger = logging.getLogger("runbanditsrun.services.activity")
+
 
 def _query_activities_with_relations(db: Session) -> Query[Activity]:
-    """Return a query with owner and kudos eager-loaded."""
-    return db.query(Activity).options(
-        selectinload(Activity.owner),
-        selectinload(Activity.kudos)
-    )
+    return db.query(Activity).options(selectinload(Activity.owner), selectinload(Activity.kudos))
 
 
 def _get_friend_ids_subquery(viewer_id: int) -> CompoundSelect[tuple[int]]:
-    """Build subquery for getting friend IDs of a user."""
-    return select(Friendship.addressee_id).where(
-        Friendship.requester_id == viewer_id,
-        Friendship.status == FriendshipStatus.ACCEPTED
-    ).union(
-        select(Friendship.requester_id).where(
-            Friendship.addressee_id == viewer_id,
-            Friendship.status == FriendshipStatus.ACCEPTED
+    return (
+        select(Friendship.addressee_id)
+        .where(Friendship.requester_id == viewer_id, Friendship.status == FriendshipStatus.ACCEPTED)
+        .union(
+            select(Friendship.requester_id).where(
+                Friendship.addressee_id == viewer_id, Friendship.status == FriendshipStatus.ACCEPTED
+            )
         )
     )
 
 
 def _filter_visible_activities(query: Query[Activity], viewer_id: int) -> Query[Activity]:
-    """Filter activities to only those visible to the viewer."""
     friend_ids_subquery = _get_friend_ids_subquery(viewer_id)
     return query.filter(
         or_(
@@ -36,18 +36,23 @@ def _filter_visible_activities(query: Query[Activity], viewer_id: int) -> Query[
             Activity.owner_id == viewer_id,
             and_(
                 Activity.visibility == Visibility.FRIENDS,
-                Activity.owner_id.in_(friend_ids_subquery)
-            )
+                Activity.owner_id.in_(friend_ids_subquery),
+            ),
         )
     )
 
 
 def _is_friend(db: Session, user_id: int, other_id: int) -> bool:
-    return db.query(Friendship).filter(
-        Friendship.status == FriendshipStatus.ACCEPTED,
-        ((Friendship.requester_id == user_id) & (Friendship.addressee_id == other_id)) |
-        ((Friendship.requester_id == other_id) & (Friendship.addressee_id == user_id))
-    ).first() is not None
+    return (
+        db.query(Friendship)
+        .filter(
+            Friendship.status == FriendshipStatus.ACCEPTED,
+            ((Friendship.requester_id == user_id) & (Friendship.addressee_id == other_id))
+            | ((Friendship.requester_id == other_id) & (Friendship.addressee_id == user_id)),
+        )
+        .first()
+        is not None
+    )
 
 
 def can_view(db: Session, activity: Activity, viewer_id: int | None) -> bool:
@@ -73,6 +78,8 @@ def enrich_activity(activity: Activity, user_id: int) -> dict:
 
 def create_activity(db: Session, owner_id: int, data: dict, tagged_ids: list[int]) -> Activity:
     from backend.models.user import User
+
+    logger.info(f"Creating activity for user {owner_id} with data: {list(data.keys())}")
     activity = Activity(owner_id=owner_id, **data)
     if tagged_ids:
         tagged = db.query(User).filter(User.id.in_(tagged_ids)).all()
@@ -80,38 +87,61 @@ def create_activity(db: Session, owner_id: int, data: dict, tagged_ids: list[int
     db.add(activity)
     db.commit()
     db.refresh(activity)
+    logger.info(f"Created activity {activity.id} for user {owner_id}")
     return activity
 
 
 def get_activity(db: Session, activity_id: int, viewer_id: int | None) -> Activity | None:
+    logger.debug(f"Fetching activity {activity_id} for viewer {viewer_id}")
     activity = _query_activities_with_relations(db).filter(Activity.id == activity_id).first()
     if activity and can_view(db, activity, viewer_id):
         return activity
+    logger.warning(f"Activity {activity_id} not found or not visible to viewer {viewer_id}")
     return None
 
 
 def update_activity(db: Session, activity_id: int, owner_id: int, updates: dict) -> Activity | None:
-    activity = _query_activities_with_relations(db).filter(Activity.id == activity_id, Activity.owner_id == owner_id).first()
+    logger.info(f"Updating activity {activity_id} by owner {owner_id}")
+    activity = (
+        _query_activities_with_relations(db)
+        .filter(Activity.id == activity_id, Activity.owner_id == owner_id)
+        .first()
+    )
     if not activity:
+        logger.warning(f"Activity {activity_id} not found for owner {owner_id}")
         return None
     for field, value in updates.items():
         setattr(activity, field, value)
     db.commit()
     db.refresh(activity)
+    logger.info(f"Updated activity {activity_id}")
     return activity
 
 
 def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
     from backend.models.activity import Activity as ActivityModel
-    activity = db.query(ActivityModel).filter(ActivityModel.id == activity_id, ActivityModel.owner_id == owner_id).first()
+
+    logger.info(f"Deleting activity {activity_id} by owner {owner_id}")
+    activity = (
+        db.query(ActivityModel)
+        .filter(ActivityModel.id == activity_id, ActivityModel.owner_id == owner_id)
+        .first()
+    )
     if not activity:
+        logger.warning(f"Activity {activity_id} not found for deletion by owner {owner_id}")
         return False
     db.delete(activity)
     db.commit()
+    logger.info(f"Deleted activity {activity_id}")
     return True
 
 
-def list_activities(db: Session, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20) -> list[dict]:
+def list_activities(
+    db: Session, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20
+) -> list[dict]:
+    logger.debug(
+        f"Listing activities for viewer {viewer_id} with filters: sport={sport_type}, offset={offset}, limit={limit}"
+    )
     query = _query_activities_with_relations(db)
     query = _filter_visible_activities(query, viewer_id)
     if sport_type:

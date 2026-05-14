@@ -1,5 +1,5 @@
-from backend.models.segment import Segment, SegmentEffort
 from backend.models.activity import Activity, SportType, Visibility
+from backend.models.segment import Segment, SegmentEffort
 
 
 class TestListSegments:
@@ -36,7 +36,9 @@ class TestGetSegment:
 class TestCreateSegment:
     def test_create_segment(self, client, auth_user):
         _, headers = auth_user
-        resp = client.post("/segments/", json={"name": "New Segment", "distance": 1500}, headers=headers)
+        resp = client.post(
+            "/segments/", json={"name": "New Segment", "distance": 1500}, headers=headers
+        )
         assert resp.status_code == 201
         assert resp.json()["name"] == "New Segment"
 
@@ -45,11 +47,18 @@ class TestLeaderboard:
     def test_leaderboard(self, client, db, auth_user):
         user, headers = auth_user
         segment = Segment(name="Hill Sprint", distance=500)
-        activity = Activity(owner_id=user.id, title="Test Run", sport_type=SportType.RUN, visibility=Visibility.PUBLIC)
+        activity = Activity(
+            owner_id=user.id,
+            title="Test Run",
+            sport_type=SportType.RUN,
+            visibility=Visibility.PUBLIC,
+        )
         db.add(segment)
         db.add(activity)
         db.commit()
-        effort = SegmentEffort(segment_id=segment.id, activity_id=activity.id, athlete_id=user.id, elapsed_time=120)
+        effort = SegmentEffort(
+            segment_id=segment.id, activity_id=activity.id, athlete_id=user.id, elapsed_time=120
+        )
         db.add(effort)
         db.commit()
         resp = client.get(f"/segments/{segment.id}/leaderboard", headers=headers)
@@ -68,11 +77,18 @@ class TestUserEfforts:
     def test_user_efforts(self, client, db, auth_user):
         user, headers = auth_user
         segment = Segment(name="Hill Sprint", distance=500)
-        activity = Activity(owner_id=user.id, title="Test Run", sport_type=SportType.RUN, visibility=Visibility.PUBLIC)
+        activity = Activity(
+            owner_id=user.id,
+            title="Test Run",
+            sport_type=SportType.RUN,
+            visibility=Visibility.PUBLIC,
+        )
         db.add(segment)
         db.add(activity)
         db.commit()
-        effort = SegmentEffort(segment_id=segment.id, activity_id=activity.id, athlete_id=user.id, elapsed_time=120)
+        effort = SegmentEffort(
+            segment_id=segment.id, activity_id=activity.id, athlete_id=user.id, elapsed_time=120
+        )
         db.add(effort)
         db.commit()
         resp = client.get(f"/segments/{segment.id}/efforts", headers=headers)
