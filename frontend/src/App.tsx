@@ -10,9 +10,6 @@ import EditActivity from "./pages/EditActivity";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Social from "./pages/Social";
-import Segments from "./pages/Segments";
-import SegmentDetail from "./pages/SegmentDetail";
-import CreateSegment from "./pages/CreateSegment";
 
 export default function App() {
   return (
@@ -28,12 +25,6 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/users/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
         <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/feed" replace />} />
-      </Routes>
-    </>
-  );
-}
-tedRoute><SegmentDetail /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/feed" replace />} />
       </Routes>
     </>

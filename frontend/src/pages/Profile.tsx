@@ -7,6 +7,7 @@ import EditProfileModal from "../components/EditProfileModal";
 import SportIcon from "../components/SportIcon";
 import { useAuth } from "../context/AuthContext";
 import { HERO_IMAGES, EMPTY_STATE_IMAGES } from "../constants/images";
+import type { Activity as ActivityType, Stats as StatsType } from "../types/api";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
@@ -38,34 +39,14 @@ function fmtTime(seconds: number | null): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-interface SportData {
-  count: number;
-  total_distance: number;
-  total_elevation?: number;
-}
-
-interface PersonalRecord {
-  best_time: number | null;
-}
-
-interface Stats {
-  totals?: Record<string, SportData>;
-  personal_records?: PersonalRecord[];
-}
-
-interface Activity {
-  id: number;
-  sport_type: string;
-}
-
 export default function Profile() {
   const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [sportFilter, setSportFilter] = useState("all");
 
-  const { data: stats } = useQuery<Stats>({ queryKey: ["stats"], queryFn: getStats, enabled: !!user });
+  const { data: stats } = useQuery<StatsType>({ queryKey: ["stats"], queryFn: getStats, enabled: !!user });
 
-  const { data: activities } = useQuery<Activity[]>({
+  const { data: activities } = useQuery<ActivityType[]>({
     queryKey: ["myActivities"],
     queryFn: () => getUserActivities(user.id, { limit: 50 }),
     enabled: !!user,
