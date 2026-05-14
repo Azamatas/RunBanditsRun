@@ -35,14 +35,14 @@ export default function NavBar() {
             <NavLink to="/feed" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
               <span>Feed</span>
             </NavLink>
-            <NavLink to="/explore" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
-              <span>Explore</span>
-            </NavLink>
             <NavLink to="/segments" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
               <span>Segments</span>
             </NavLink>
             <NavLink to="/log" className={({ isActive }) => `nav-link nav-log-btn${isActive ? " active" : ""}`}>
               Log Activity
+            </NavLink>
+            <NavLink to="/social" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
+              <span>Social</span>
             </NavLink>
 
             <div className="nav-user">

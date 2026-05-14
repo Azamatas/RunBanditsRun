@@ -8,6 +8,7 @@ from backend.models.activity import SportType
 from backend.models.user import User
 from backend.routers.deps import get_current_user
 from backend.schemas.activity import ActivityOut
+from backend.schemas.friendship import FriendRequestOut, SentFriendRequestOut
 from backend.schemas.user import UserOut, UserUpdate
 from backend.services import user_service
 
@@ -58,7 +59,7 @@ def list_pending_friend_requests(
     return user_service.get_pending_friend_requests(db, current_user.id)
 
 
-@router.get("/me/friend-requests/incoming")
+@router.get("/me/friend-requests/incoming", response_model=list[FriendRequestOut])
 def list_incoming_friend_requests(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
@@ -66,7 +67,7 @@ def list_incoming_friend_requests(
     return user_service.get_incoming_friend_requests(db, current_user.id)
 
 
-@router.get("/me/friend-requests/sent")
+@router.get("/me/friend-requests/sent", response_model=list[SentFriendRequestOut])
 def list_sent_friend_requests(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):

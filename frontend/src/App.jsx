@@ -9,7 +9,7 @@ import ActivityDetail from "./pages/ActivityDetail";
 import EditActivity from "./pages/EditActivity";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
-import Explore from "./pages/Explore";
+import Social from "./pages/Social";
 import Segments from "./pages/Segments";
 import SegmentDetail from "./pages/SegmentDetail";
 import CreateSegment from "./pages/CreateSegment";
@@ -27,7 +27,7 @@ export default function App() {
         <Route path="/activities/:id/edit" element={<ProtectedRoute><EditActivity /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/users/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-        <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+        <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
         <Route path="/segments" element={<ProtectedRoute><Segments /></ProtectedRoute>} />
         <Route path="/segments/new" element={<ProtectedRoute><CreateSegment /></ProtectedRoute>} />
         <Route path="/segments/:id" element={<ProtectedRoute><SegmentDetail /></ProtectedRoute>} />

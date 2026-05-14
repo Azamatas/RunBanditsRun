@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
 from backend.models.user import User
+from backend.schemas.friendship import FriendRequestOut, SentFriendRequestOut
 from backend.services import auth_service
+from backend.services.activity_service import enrich_activity
 
 logger = logging.getLogger("runbanditsrun.services.user")
 
@@ -58,46 +60,71 @@ def get_pending_friend_requests(db: Session, user_id: int) -> list[User]:
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 
-def get_incoming_friend_requests(db: Session, user_id: int) -> list[dict]:
-    from backend.schemas.user import UserOut
-
+def get_incoming_friend_requests(db: Session, user_id: int) -> list["FriendRequestOut"]:
     logger.debug(f"Fetching incoming friend requests for user {user_id}")
-    friendships = (
-        db.query(Friendship)
-        .filter(Friendship.addressee_id == user_id, Friendship.status == FriendshipStatus.PENDING)
+    rows = (
+        db.query(Friendship, User)
+        .join(User, User.id == Friendship.requester_id)
+        .filter(
+            Friendship.addressee_id == user_id,
+            Friendship.status == FriendshipStatus.PENDING
+        )
         .all()
     )
     return [
-        {
-            "id": f.id,
-            "requester_id": f.requester_id,
-            "requester": UserOut.model_validate(
-                db.query(User).filter(User.id == f.requester_id).first()
-            ),
-            "status": f.status.value,
-            "created_at": f.created_at.isoformat() if f.created_at else None,
-        }
-        for f in friendships
+        FriendRequestOut.model_validate(
+            {
+                "id": f.id,
+                "requester_id": f.requester_id,
+                "requester": u,
+                "status": f.status.value,
+                "created_at": f.created_at,
+            }
+        )
+        for f, u in rows
     ]
 
 
-def get_sent_friend_requests(db: Session, user_id: int) -> list[dict]:
+def get_sent_friend_requests(db: Session, user_id: int) -> list["SentFriendRequestOut"]:
     logger.debug(f"Fetching sent friend requests for user {user_id}")
-    friendships = (
-        db.query(Friendship)
-        .filter(Friendship.requester_id == user_id, Friendship.status == FriendshipStatus.PENDING)
+    rows = (
+        db.query(Friendship, User)
+        .join(User, User.id == Friendship.addressee_id)
+        .filter(
+            Friendship.requester_id == user_id,
+            Friendship.status == FriendshipStatus.PENDING
+        )
         .all()
     )
     return [
-        {"id": f.id, "addressee_id": f.addressee_id, "status": f.status.value} for f in friendships
+        SentFriendRequestOut.model_validate(
+            {
+                "id": f.id,
+                "addressee_id": f.addressee_id,
+                "addressee": u,
+                "status": f.status.value,
+                "created_at": f.created_at,
+            }
+        )
+        for f, u in rows
     ]
 
 
 def search_users(db: Session, current_user_id: int, query: str = "", limit: int = 50) -> list[User]:
     logger.debug(f"User {current_user_id} searching users with query: {query}")
-    q = db.query(User).filter(User.id != current_user_id)
-    if query:
-        q = q.filter(User.username.ilike(f"%{query}%"))
+    if not query:
+        related_ids = select(Friendship.addressee_id).where(
+            Friendship.requester_id == current_user_id,
+            Friendship.status.in_([FriendshipStatus.ACCEPTED, FriendshipStatus.PENDING])
+        ).union_all(
+            select(Friendship.requester_id).where(
+                Friendship.addressee_id == current_user_id,
+                Friendship.status.in_([FriendshipStatus.ACCEPTED, FriendshipStatus.PENDING])
+            )
+        )
+        q = db.query(User).filter(User.id != current_user_id, ~User.id.in_(related_ids))
+    else:
+        q = db.query(User).filter(User.id != current_user_id, User.username.ilike(f"%{query}%"))
     return q.limit(limit).all()
 
 
@@ -177,8 +204,6 @@ def remove_friend(db: Session, current_user_id: int, target_user_id: int) -> Non
 def get_user_activities(
     db: Session, user_id: int, viewer_id: int, sport_type=None, offset: int = 0, limit: int = 20
 ) -> list[dict] | None:
-    from backend.services.activity_service import enrich_activity
-
     logger.debug(f"Fetching activities for user {user_id} viewed by user {viewer_id}")
     target = db.query(User).filter(User.id == user_id).first()
     if not target:

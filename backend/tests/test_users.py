@@ -1,3 +1,8 @@
+from backend.models.user import User
+from backend.services import auth_service
+from backend.tests.conftest import MOCK_HASH
+
+
 class TestGetMe:
     def test_get_me(self, client, auth_user):
         user, headers = auth_user
@@ -108,3 +113,207 @@ class TestFriendLists:
         client.post(f"/users/{user.id}/friend-request", headers=second_user_auth[1])
         resp = client.get("/users/me/friend-requests/pending", headers=headers)
         assert resp.status_code == 200
+
+
+class TestSearchUsers:
+    def test_search_excludes_self(self, client, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert user.id not in [u["id"] for u in results]
+
+    def test_search_excludes_friends_bidirectional(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        client.post(f"/users/{user.id}/accept-friend", headers=second_headers)
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id not in [u["id"] for u in results]
+
+    def test_search_excludes_pending_incoming(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{user.id}/friend-request", headers=second_headers)
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id not in [u["id"] for u in results]
+
+    def test_search_excludes_pending_outgoing(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id not in [u["id"] for u in results]
+
+    def test_search_with_query_includes_incoming_request(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{user.id}/friend-request", headers=second_headers)
+        resp = client.get("/users/search?q=other", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id in [u["id"] for u in results]
+
+    def test_search_with_query_includes_friends(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        client.post(f"/users/{user.id}/accept-friend", headers=second_headers)
+        resp = client.get("/users/search?q=other", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id in [u["id"] for u in results]
+
+    def test_search_with_query_includes_outgoing_request(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        resp = client.get("/users/search?q=other", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id in [u["id"] for u in results]
+
+    def test_search_returns_unrelated_users(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id in [u["id"] for u in results]
+
+    def test_search_case_insensitive(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get("/users/search?q=OTHER", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert second_user.id in [u["id"] for u in results]
+
+    def test_search_returns_only_unrelated_users(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get("/users/search", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        result_ids = [u["id"] for u in results]
+        assert user.id not in result_ids
+        assert second_user.id in result_ids
+
+    def test_search_excludes_current_user_with_query(self, client, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get(f"/users/search?q={user.username}", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert user.id not in [u["id"] for u in results]
+
+    def test_search_no_match_returns_empty(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        resp = client.get("/users/search?q=nonexistentuser", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 0
+
+
+class TestIncomingFriendRequests:
+    def test_empty_when_no_requests(self, client, auth_user):
+        _, headers = auth_user
+        resp = client.get("/users/me/friend-requests/incoming", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    def test_returns_incoming_request(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{user.id}/friend-request", headers=second_headers)
+        resp = client.get("/users/me/friend-requests/incoming", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 1
+        assert results[0]["requester_id"] == second_user.id
+        assert results[0]["requester"]["id"] == second_user.id
+        assert results[0]["status"] == "pending"
+
+    def test_excludes_accepted_friendships(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{user.id}/friend-request", headers=second_headers)
+        client.post(f"/users/{second_user.id}/accept-friend", headers=headers)
+        resp = client.get("/users/me/friend-requests/incoming", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    def test_multiple_incoming_requests(self, client, db, auth_user, second_user, second_user_auth):
+        user, headers = auth_user
+        _, second_headers = second_user_auth
+        third_user = User(username="thirduser", email="third@test.com", password_hash=MOCK_HASH)
+        db.add(third_user)
+        db.commit()
+        db.refresh(third_user)
+        client.post(f"/users/{user.id}/friend-request", headers=second_headers)
+        token3 = auth_service.create_access_token(third_user.id)
+        client.post(f"/users/{user.id}/friend-request", headers={"Authorization": f"Bearer {token3}"})
+        resp = client.get("/users/me/friend-requests/incoming", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 2
+        requester_ids = [r["requester_id"] for r in results]
+        assert second_user.id in requester_ids
+        assert third_user.id in requester_ids
+
+
+class TestSentFriendRequests:
+    def test_empty_when_no_requests(self, client, auth_user):
+        _, headers = auth_user
+        resp = client.get("/users/me/friend-requests/sent", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    def test_returns_sent_request(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        resp = client.get("/users/me/friend-requests/sent", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 1
+        assert results[0]["addressee_id"] == second_user.id
+        assert results[0]["addressee"]["id"] == second_user.id
+        assert results[0]["status"] == "pending"
+
+    def test_excludes_accepted_friendships(self, client, db, auth_user, second_user_auth):
+        user, headers = auth_user
+        second_user, second_headers = second_user_auth
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        client.post(f"/users/{user.id}/accept-friend", headers=second_headers)
+        resp = client.get("/users/me/friend-requests/sent", headers=headers)
+        assert resp.status_code == 200
+        assert resp.json() == []
+
+    def test_multiple_sent_requests(self, client, db, auth_user, second_user):
+        user, headers = auth_user
+        third_user = User(username="thirduser2", email="third2@test.com", password_hash=MOCK_HASH)
+        db.add(third_user)
+        db.commit()
+        db.refresh(third_user)
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        client.post(f"/users/{third_user.id}/friend-request", headers=headers)
+        resp = client.get("/users/me/friend-requests/sent", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 2
+        addressee_ids = [r["addressee_id"] for r in results]
+        assert second_user.id in addressee_ids
+        assert third_user.id in addressee_ids
+
+    def test_only_own_requests(self, client, db, auth_user, second_user, second_user_auth):
+        _, headers = auth_user
+        second_user, second_headers = second_user_auth
+        third_user = User(username="fourthuser", email="fourth@test.com", password_hash=MOCK_HASH)
+        db.add(third_user)
+        db.commit()
+        db.refresh(third_user)
+        client.post(f"/users/{third_user.id}/friend-request", headers=second_headers)
+        resp = client.get("/users/me/friend-requests/sent", headers=headers)
+        assert resp.status_code == 200
+        results = resp.json()
+        assert len(results) == 0

@@ -5,12 +5,14 @@ const AVATAR_COLORS = [
   "#0d9488", "#a16207", "#6d28d9",
 ];
 
-export default function UserCard({ user, status, onFollow, onAccept, onUnfollow, loading }) {
+export default function UserCard({ user, status, onFollow, onAccept, onUnfollow, onCancel, loading }) {
   const color = AVATAR_COLORS[user.id % AVATAR_COLORS.length];
 
   let actionBtn;
   if (status === "accepted") {
-    actionBtn = <button className="btn-ghost btn-sm friend-btn friend-btn-accepted" onClick={onUnfollow} disabled={loading}>Friends</button>;
+    actionBtn = <button className="btn-ghost btn-sm friend-btn friend-btn-accepted" onClick={onUnfollow} disabled={loading}>Unfriend</button>;
+  } else if (status === "pending" && onCancel) {
+    actionBtn = <button className="btn-ghost btn-sm friend-btn" onClick={onCancel} disabled={loading}>Cancel</button>;
   } else if (status === "pending") {
     actionBtn = <button className="btn-sm friend-btn friend-btn-pending" disabled>Request Sent</button>;
   } else if (status === "incoming") {
@@ -36,6 +38,7 @@ export default function UserCard({ user, status, onFollow, onAccept, onUnfollow,
         <div className="user-card-name">{user.username}</div>
         {user.location && <div className="user-card-location">{user.location}</div>}
         {user.bio && <div className="user-card-bio">{user.bio}</div>}
+        {status === "pending" && <div className="user-card-status">request pending</div>}
       </Link>
       {actionBtn}
     </div>

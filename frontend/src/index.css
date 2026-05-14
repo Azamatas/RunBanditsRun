@@ -1,6 +1,4 @@
-/* ============================================
-   RunBanditsRun — Design System
-   ============================================ */
+
 
 :root {
   --orange-50: #fff7ed;
@@ -67,7 +65,7 @@
   --page-wide: 960px;
 }
 
-/* Reset */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -88,10 +86,10 @@ a { color: inherit; text-decoration: none; }
 
 h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; }
 
-/* Layout */
+
 .page { max-width: var(--page-max); margin: 0 auto; padding: 24px 16px; }
 
-/* Cards */
+
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
@@ -109,7 +107,7 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.02em; }
   overflow: hidden;
 }
 
-/* Buttons */
+
 button, .btn {
   cursor: pointer;
   border: none;
@@ -169,7 +167,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-full { width: 100%; }
 
-/* Form Controls */
+
 input, select, textarea {
   width: 100%;
   padding: 12px 16px;
@@ -202,7 +200,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
 }
 
-/* Badges */
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -227,7 +225,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Avatar */
+
 .avatar {
   width: 40px;
   height: 40px;
@@ -246,7 +244,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .avatar-lg { width: 72px; height: 72px; font-size: var(--text-2xl); }
 .avatar-xl { width: 96px; height: 96px; font-size: var(--text-3xl); }
 
-/* Sport Selector with images */
+
 .sport-selector { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .sport-option {
@@ -297,7 +295,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .sport-option .sport-icon { font-size: 1.5rem; }
 
-/* Visibility Pills */
+
 .pill-group {
   display: flex;
   background: var(--gray-100);
@@ -323,7 +321,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .pill-option:hover { color: var(--text); }
 .pill-option.active { background: var(--bg-card); color: var(--text); box-shadow: var(--shadow-xs); }
 
-/* Skeleton Loaders */
+
 .skeleton {
   background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
   background-size: 200% 100%;
@@ -338,7 +336,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   100% { background-position: -200% 0; }
 }
 
-/* Kudos Button */
+
 .kudos-btn {
   display: inline-flex;
   align-items: center;
@@ -365,7 +363,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   100% { transform: scale(1); }
 }
 
-/* Navbar */
+
 .navbar {
   position: sticky;
   top: 0;
@@ -508,9 +506,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .nav-user { margin-left: 8px; padding-left: 8px; }
 }
 
-/* ============================================
-   Auth Pages — Split Layout with Hero Image
-   ============================================ */
+
 
 .auth-page {
   height: 100vh;
@@ -600,9 +596,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .auth-footer a { color: var(--accent); font-weight: 600; }
 .auth-footer a:hover { text-decoration: underline; }
 
-/* ============================================
-   Feed — Hero Banner
-   ============================================ */
+
 
 .feed-hero {
   border-radius: var(--radius-lg);
@@ -628,11 +622,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .feed-greeting { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.03em; color: #fff; }
 .feed-sub { color: rgba(255, 255, 255, 0.85); font-size: var(--text-sm); margin-top: 4px; }
 
-/* ============================================
-   Explore — Hero Banner
-   ============================================ */
 
-.explore-hero {
+
+.social-hero {
   border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 24px;
@@ -642,7 +634,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   position: relative;
 }
 
-.explore-hero-overlay {
+.social-hero-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(13, 148, 136, 0.8) 0%, rgba(6, 95, 70, 0.7) 100%);
@@ -653,21 +645,33 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   color: #fff;
 }
 
-.explore-hero-overlay h2 {
+.social-hero-overlay h2 {
   font-size: var(--text-2xl);
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
-.explore-hero-overlay p {
+.social-hero-overlay p {
   font-size: var(--text-sm);
   opacity: 0.85;
   margin-top: 4px;
 }
 
-/* ============================================
-   Segments — Hero Banner
-   ============================================ */
+.friends-section {
+  margin-bottom: 24px;
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.social-page {
+  padding-top: 16px;
+}
+
+
 
 .segments-hero {
   border-radius: var(--radius-lg);
@@ -702,9 +706,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   margin-top: 4px;
 }
 
-/* ============================================
-   Empty States with Images
-   ============================================ */
+
 
 .empty-state { text-align: center; padding: 48px 24px; }
 .empty-state h3 { font-size: var(--text-lg); font-weight: 700; margin-bottom: 8px; }
@@ -728,9 +730,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
 
-/* ============================================
-   Activity Card — with Image Banner
-   ============================================ */
+
 
 .activity-card {
   background: var(--bg-card);
@@ -801,9 +801,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ============================================
-   Activity Detail — Hero Image fallback
-   ============================================ */
+
 
 .detail-hero-image {
   height: 220px;
@@ -864,9 +862,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   margin-top: 4px;
 }
 
-/* ============================================
-   Profile — Full-bleed Hero Card
-   ============================================ */
+
 
 .profile-card {
   background-size: cover;
@@ -877,7 +873,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .profile-cover-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.55) 100%); /* last property - brightness */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.55) 100%); 
 }
 
 .profile-hero {
@@ -954,7 +950,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .section-title { font-size: var(--text-lg); font-weight: 700; margin-bottom: 16px; letter-spacing: -0.02em; }
 
-/* Error */
+
 .error {
   color: var(--danger);
   font-size: var(--text-sm);
@@ -965,7 +961,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   margin-bottom: 16px;
 }
 
-/* Spinner */
+
 .spinner {
   width: 20px;
   height: 20px;
@@ -979,7 +975,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Scrollbar */
+
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
@@ -989,9 +985,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .profile-hero { flex-direction: column; text-align: center; padding: 24px; }
 }
 
-/* ============================================
-   Modal
-   ============================================ */
+
 
 .modal-overlay {
   position: fixed;
@@ -1051,9 +1045,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ============================================
-   Search Bar
-   ============================================ */
+
 
 .search-bar {
   position: relative;
@@ -1079,9 +1071,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   align-items: center;
 }
 
-/* ============================================
-   User Card (Explore)
-   ============================================ */
+
 
 .user-card {
   display: flex;
@@ -1101,6 +1091,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .user-card-name { font-weight: 700; font-size: var(--text-base); }
 .user-card-location { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
 .user-card-bio { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-card-status { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
 
 .friend-btn { min-width: 90px; }
 
@@ -1116,9 +1107,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   border: 1px solid var(--orange-200);
 }
 
-/* ============================================
-   Leaderboard Table
-   ============================================ */
+
 
 .leaderboard {
   width: 100%;
@@ -1169,9 +1158,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .medal-silver { background: #e5e7eb; color: #6b7280; }
 .medal-bronze { background: #fed7aa; color: #c2410c; }
 
-/* ============================================
-   Filter Pills
-   ============================================ */
+
 
 .filter-pills {
   display: flex;
@@ -1205,9 +1192,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .filter-pill:hover { border-color: var(--gray-300); color: var(--text); }
 .filter-pill.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
 
-/* ============================================
-   Personal Records
-   ============================================ */
+
 
 .pr-grid {
   display: grid;
@@ -1241,9 +1226,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   letter-spacing: 0.04em;
 }
 
-/* ============================================
-   Map Container (Leaflet)
-   ============================================ */
+
 
 .map-container {
   border-radius: var(--radius-md);
@@ -1258,9 +1241,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   background: var(--gray-100);
 }
 
-/* ============================================
-   Tag Chips
-   ============================================ */
+
 
 .tag-chips {
   display: flex;
@@ -1300,9 +1281,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .tag-chip-remove:hover { background: var(--danger); }
 
-/* ============================================
-   Segment Card — with Background Image
-   ============================================ */
+
 
 .segment-card {
   background: var(--bg-card);
@@ -1392,9 +1371,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   gap: 16px;
 }
 
-/* ============================================
-   Edit Button
-   ============================================ */
+
 
 .edit-btn {
   padding: 6px 14px;
@@ -1411,9 +1388,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .edit-btn:hover { background: var(--gray-200); color: var(--text); }
 
-/* ============================================
-   Tagged Athletes Row
-   ============================================ */
+
 
 .tagged-row {
   display: flex;
@@ -1429,9 +1404,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .tagged-row .avatar { margin-left: -6px; border: 2px solid var(--bg-card); }
 .tagged-row .avatar:first-child { margin-left: 0; }
 
-/* ============================================
-   Load More
-   ============================================ */
+
 
 .load-more {
   display: flex;
