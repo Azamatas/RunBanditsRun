@@ -9,7 +9,6 @@ const MOCK_TOKEN = "mock-jwt-token";
 const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
 export const handlers = [
-  // ── Auth ──
   http.post("/api/auth/register", () =>
     HttpResponse.json({ access_token: MOCK_TOKEN, token_type: "bearer" }),
   ),
@@ -17,8 +16,7 @@ export const handlers = [
     HttpResponse.json({ access_token: MOCK_TOKEN, token_type: "bearer" }),
   ),
 
-  // ── Users ──
-  http.get("/api/users/me", () => HttpResponse.json(currentUser)),
+http.get("/api/users/me", () => HttpResponse.json(currentUser)),
 
   http.patch("/api/users/me", async ({ request }) => {
     const body = await request.json();
@@ -69,7 +67,6 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  // ── Feed ──
   http.get("/api/feed/", ({ request }) => {
     const url = new URL(request.url);
     const limit = Number(url.searchParams.get("limit")) || 20;
@@ -77,7 +74,6 @@ export const handlers = [
     return HttpResponse.json(activities.slice(offset, offset + limit).map(enrichActivity));
   }),
 
-  // ── Activities ──
   http.post("/api/activities/", async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json(createActivity(body));
@@ -103,7 +99,6 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  // ── Kudos ──
   http.post("/api/activities/:id/kudos", ({ params }) => {
     const activity = activities.find((a) => a.id === Number(params.id));
     if (!activity) return new HttpResponse(null, { status: 404 });
@@ -118,10 +113,8 @@ export const handlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  // ── Stats ──
   http.get("/api/stats/me", () => HttpResponse.json(stats)),
 
-  // ── Segments ──
   http.get("/api/segments/", () => {
     const enriched = segments.map((seg) => {
       const myBest = segmentEfforts
