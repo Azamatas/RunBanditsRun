@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { searchUsers, getFollowing, getPendingRequests, getSentRequests, followUser, acceptFollow, unfollowUser } from "../api/users";
+import { searchUsers, getFriends, getIncomingFriendRequests, getSentFriendRequests, sendFriendRequest, acceptFriendRequest, removeFriend } from "../api/users";
 import UserCard from "../components/UserCard";
 import { SearchIcon } from "../components/SportIcon";
 import { HERO_IMAGES } from "../constants/images";
@@ -15,60 +15,60 @@ export default function Explore() {
     enabled: true,
   });
 
-  const { data: following } = useQuery({
-    queryKey: ["following"],
-    queryFn: getFollowing,
+  const { data: friends } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
   });
 
-  const { data: pendingRequests } = useQuery({
-    queryKey: ["pendingRequests"],
-    queryFn: getPendingRequests,
+  const { data: incomingFriendRequests } = useQuery({
+    queryKey: ["incomingFriendRequests"],
+    queryFn: getIncomingFriendRequests,
   });
 
-  const { data: sentRequests } = useQuery({
-    queryKey: ["sentRequests"],
-    queryFn: getSentRequests,
+  const { data: sentFriendRequests } = useQuery({
+    queryKey: ["sentFriendRequests"],
+    queryFn: getSentFriendRequests,
   });
 
-  const followingIds = new Set((following ?? []).map((u) => u.id));
-  const pendingIncomingIds = new Set((pendingRequests ?? []).map((r) => r.requester_id));
-  const pendingOutgoingIds = new Set((sentRequests ?? []).map((r) => r.addressee_id));
+  const friendIds = new Set((friends ?? []).map((u) => u.id));
+  const pendingIncomingIds = new Set((incomingFriendRequests ?? []).map((r) => r.requester_id));
+  const pendingOutgoingIds = new Set((sentFriendRequests ?? []).map((r) => r.addressee_id));
 
-  const followMutation = useMutation({
-    mutationFn: followUser,
+  const sendFriendRequestMutation = useMutation({
+    mutationFn: sendFriendRequest,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
-      qc.invalidateQueries({ queryKey: ["sentRequests"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
+      qc.invalidateQueries({ queryKey: ["sentFriendRequests"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
 
-  const acceptMutation = useMutation({
-    mutationFn: acceptFollow,
+  const acceptFriendRequestMutation = useMutation({
+    mutationFn: acceptFriendRequest,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
-      qc.invalidateQueries({ queryKey: ["pendingRequests"] });
-      qc.invalidateQueries({ queryKey: ["sentRequests"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
+      qc.invalidateQueries({ queryKey: ["incomingFriendRequests"] });
+      qc.invalidateQueries({ queryKey: ["sentFriendRequests"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
 
-  const unfollowMutation = useMutation({
-    mutationFn: unfollowUser,
+  const removeFriendMutation = useMutation({
+    mutationFn: removeFriend,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
 
   function getStatus(userId) {
-    if (followingIds.has(userId)) return "accepted";
+    if (friendIds.has(userId)) return "accepted";
     if (pendingIncomingIds.has(userId)) return "incoming";
     if (pendingOutgoingIds.has(userId)) return "pending";
     return null;
   }
 
-  const incoming = pendingRequests ?? [];
+  const incoming = incomingFriendRequests ?? [];
 
   return (
     <div className="page">
@@ -92,14 +92,14 @@ export default function Explore() {
 
       {incoming.length > 0 && (
         <div style={{ marginBottom: 32 }}>
-          <h3 className="section-title">Pending Requests</h3>
+          <h3 className="section-title">Friend Requests</h3>
           {incoming.map((req) => (
             <UserCard
               key={req.requester_id}
               user={req.requester}
               status="incoming"
-              onAccept={() => acceptMutation.mutate(req.requester_id)}
-              loading={acceptMutation.isPending}
+              onAccept={() => acceptFriendRequestMutation.mutate(req.requester_id)}
+              loading={acceptFriendRequestMutation.isPending}
             />
           ))}
         </div>
@@ -116,10 +116,10 @@ export default function Explore() {
           key={u.id}
           user={u}
           status={getStatus(u.id)}
-          onFollow={() => followMutation.mutate(u.id)}
-          onAccept={() => acceptMutation.mutate(u.id)}
-          onUnfollow={() => unfollowMutation.mutate(u.id)}
-          loading={followMutation.isPending || unfollowMutation.isPending}
+          onFollow={() => sendFriendRequestMutation.mutate(u.id)}
+          onAccept={() => acceptFriendRequestMutation.mutate(u.id)}
+          onUnfollow={() => removeFriendMutation.mutate(u.id)}
+          loading={sendFriendRequestMutation.isPending || removeFriendMutation.isPending}
         />
       ))}
     </div>

@@ -1102,15 +1102,15 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .user-card-location { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
 .user-card-bio { font-size: var(--text-sm); color: var(--text-secondary); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.follow-btn { min-width: 90px; }
+.friend-btn { min-width: 90px; }
 
-.follow-btn-following {
+.friend-btn-accepted {
   background: var(--gray-100);
   color: var(--text-secondary);
   border: 1px solid var(--border);
 }
 
-.follow-btn-pending {
+.friend-btn-pending {
   background: var(--orange-50);
   color: var(--accent);
   border: 1px solid var(--orange-200);

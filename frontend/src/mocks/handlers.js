@@ -35,12 +35,12 @@ export const handlers = [
     return HttpResponse.json(results);
   }),
 
-  http.get("/api/users/me/following", () => {
+  http.get("/api/users/me/friends", () => {
     const friendIds = getFriendsOf(currentUser.id);
     return HttpResponse.json(friendIds.map((id) => userMap[id]).filter(Boolean));
   }),
 
-  http.get("/api/users/me/requests", () => {
+  http.get("/api/users/me/friend-requests/incoming", () => {
     const pending = getPendingRequestsFor(currentUser.id);
     return HttpResponse.json(
       pending.map((f) => ({ ...f, requester: userMap[f.requester_id] })),
@@ -53,16 +53,20 @@ export const handlers = [
     return HttpResponse.json(u);
   }),
 
-  http.post("/api/users/:userId/follow", ({ params }) => {
+  http.post("/api/users/:userId/friend-request", ({ params }) => {
     const id = Number(params.userId);
     addFriendship(currentUser.id, id);
     return HttpResponse.json({ status: "pending" }, { status: 201 });
   }),
 
-  http.post("/api/users/:userId/accept", ({ params }) => {
+  http.post("/api/users/:userId/accept-friend", ({ params }) => {
     const id = Number(params.userId);
     acceptFriendship(id, currentUser.id);
     return HttpResponse.json({ status: "accepted" });
+  }),
+
+  http.delete("/api/users/:userId/friend", () => {
+    return new HttpResponse(null, { status: 204 });
   }),
 
   // ── Feed ──

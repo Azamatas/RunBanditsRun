@@ -1,5 +1,3 @@
-
-
 class TestGetMe:
     def test_get_me(self, client, auth_user):
         user, headers = auth_user
@@ -43,70 +41,70 @@ class TestGetUser:
         assert resp.status_code == 404
 
 
-class TestFollow:
-    def test_follow_user(self, client, auth_user, second_user):
+class TestFriendRequests:
+    def test_send_friend_request(self, client, auth_user, second_user):
         user, headers = auth_user
-        resp = client.post(f"/users/{second_user.id}/follow", headers=headers)
+        resp = client.post(f"/users/{second_user.id}/friend-request", headers=headers)
         assert resp.status_code == 201
         assert resp.json()["status"] == "pending"
 
-    def test_follow_self(self, client, auth_user):
+    def test_send_friend_request_to_self(self, client, auth_user):
         user, headers = auth_user
-        resp = client.post(f"/users/{user.id}/follow", headers=headers)
+        resp = client.post(f"/users/{user.id}/friend-request", headers=headers)
         assert resp.status_code == 400
 
-    def test_follow_twice(self, client, auth_user, second_user):
+    def test_send_friend_request_twice(self, client, auth_user, second_user):
         _, headers = auth_user
-        client.post(f"/users/{second_user.id}/follow", headers=headers)
-        resp = client.post(f"/users/{second_user.id}/follow", headers=headers)
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        resp = client.post(f"/users/{second_user.id}/friend-request", headers=headers)
         assert resp.status_code == 400
 
 
-class TestAcceptFollow:
-    def test_accept_follow(self, client, auth_user, second_user_auth):
+class TestAcceptFriendRequest:
+    def test_accept_friend_request(self, client, auth_user, second_user_auth):
         user, headers = auth_user
-        client.post(f"/users/{second_user_auth[0].id}/follow", headers=headers)
-        resp = client.post(f"/users/{user.id}/accept", headers=second_user_auth[1])
+        client.post(f"/users/{second_user_auth[0].id}/friend-request", headers=headers)
+        resp = client.post(f"/users/{user.id}/accept-friend", headers=second_user_auth[1])
         assert resp.status_code == 200
         assert resp.json()["status"] == "accepted"
 
-    def test_accept_no_pending(self, client, auth_user, second_user):
+    def test_accept_no_pending_request(self, client, auth_user, second_user):
         _, headers = auth_user
-        resp = client.post(f"/users/{second_user.id}/accept", headers=headers)
+        resp = client.post(f"/users/{second_user.id}/accept-friend", headers=headers)
         assert resp.status_code == 404
 
 
-class TestUnfollow:
-    def test_unfollow_accepted(self, client, db, auth_user, second_user, second_user_auth):
+class TestRemoveFriend:
+    def test_remove_friend_accepted(self, client, db, auth_user, second_user, second_user_auth):
         user, headers = auth_user
-        client.post(f"/users/{second_user.id}/follow", headers=headers)
-        client.post(f"/users/{user.id}/accept", headers=second_user_auth[1])
-        resp = client.delete(f"/users/{second_user.id}/unfollow", headers=headers)
+        client.post(f"/users/{second_user.id}/friend-request", headers=headers)
+        client.post(f"/users/{user.id}/accept-friend", headers=second_user_auth[1])
+        resp = client.delete(f"/users/{second_user.id}/friend", headers=headers)
         assert resp.status_code == 204
 
-    def test_unfollow_not_found(self, client, auth_user, second_user):
+    def test_remove_friend_not_found(self, client, auth_user, second_user):
         _, headers = auth_user
-        resp = client.delete(f"/users/{second_user.id}/unfollow", headers=headers)
+        resp = client.delete(f"/users/{second_user.id}/friend", headers=headers)
         assert resp.status_code == 404
 
 
-class TestFollowLists:
-    def test_list_followers(self, client, db, auth_user, second_user_auth):
+class TestFriendLists:
+    def test_list_friends_from(self, client, db, auth_user, second_user_auth):
         user, headers = auth_user
-        client.post(f"/users/{second_user_auth[0].id}/follow", headers=second_user_auth[1])
-        client.post(f"/users/{second_user_auth[0].id}/accept", headers=headers)
-        resp = client.get("/users/me/followers", headers=headers)
+        client.post(f"/users/{second_user_auth[0].id}/friend-request", headers=second_user_auth[1])
+        client.post(f"/users/{second_user_auth[0].id}/accept-friend", headers=headers)
+        resp = client.get("/users/me/friends/incoming", headers=headers)
         assert resp.status_code == 200
 
-    def test_list_following(self, client, db, auth_user, second_user_auth):
+    def test_list_friends(self, client, db, auth_user, second_user_auth):
         user, headers = auth_user
-        client.post(f"/users/{second_user_auth[0].id}/follow", headers=headers)
-        client.post(f"/users/{user.id}/accept", headers=second_user_auth[1])
-        resp = client.get("/users/me/following", headers=headers)
+        client.post(f"/users/{second_user_auth[0].id}/friend-request", headers=headers)
+        client.post(f"/users/{user.id}/accept-friend", headers=second_user_auth[1])
+        resp = client.get("/users/me/friends", headers=headers)
         assert resp.status_code == 200
 
-    def test_list_pending(self, client, auth_user, second_user_auth):
+    def test_list_pending_friend_requests(self, client, auth_user, second_user_auth):
         user, headers = auth_user
-        client.post(f"/users/{user.id}/follow", headers=second_user_auth[1])
-        resp = client.get("/users/me/pending", headers=headers)
+        client.post(f"/users/{user.id}/friend-request", headers=second_user_auth[1])
+        resp = client.get("/users/me/friend-requests/pending", headers=headers)
         assert resp.status_code == 200

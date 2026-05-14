@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createActivity } from "../api/activities";
-import { getFollowing } from "../api/users";
+import { getFriends } from "../api/users";
 import SportIcon from "../components/SportIcon";
 import RouteBuilder from "../components/RouteBuilder";
 import { SPORT_THUMBNAILS } from "../constants/images";
@@ -47,9 +47,9 @@ export default function LogActivity() {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, taggedIds }));
   }, [form, taggedIds]);
 
-  const { data: following } = useQuery({
-    queryKey: ["following"],
-    queryFn: getFollowing,
+  const { data: friends } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
   });
 
   const mutation = useMutation({
@@ -73,7 +73,7 @@ export default function LogActivity() {
     setTaggedIds(taggedIds.filter((id) => id !== userId));
   }
 
-  const availableFriends = (following ?? []).filter(
+  const availableFriends = (friends ?? []).filter(
     (f) => !taggedIds.includes(f.id) && f.username.toLowerCase().includes(tagSearch.toLowerCase()),
   );
 
@@ -154,7 +154,7 @@ export default function LogActivity() {
 
           {/* Tag athletes */}
           <div className="form-group">
-            <label>Tag Athletes <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
+            <label>Tag Friends <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
             <input
               value={tagSearch}
               onChange={(e) => setTagSearch(e.target.value)}
@@ -183,7 +183,7 @@ export default function LogActivity() {
             {taggedIds.length > 0 && (
               <div className="tag-chips">
                 {taggedIds.map((id) => {
-                  const f = (following ?? []).find((u) => u.id === id);
+                  const f = (friends ?? []).find((u) => u.id === id);
                   return (
                     <span className="tag-chip" key={id}>
                       {f?.username ?? `#${id}`}

@@ -31,34 +31,37 @@ def update_user(db: Session, current_user: User, updates: dict) -> User:
     return current_user
 
 
-def get_followers(db: Session, user_id: int) -> list[User]:
-    logger.debug(f"Fetching followers for user {user_id}")
+def get_friends(db: Session, user_id: int) -> list[User]:
+    logger.debug(f"Fetching friends for user {user_id}")
+    addressee_ids = select(Friendship.addressee_id).where(
+        Friendship.requester_id == user_id, Friendship.status == FriendshipStatus.ACCEPTED
+    )
+    requester_ids = select(Friendship.requester_id).where(
+        Friendship.addressee_id == user_id, Friendship.status == FriendshipStatus.ACCEPTED
+    )
+    return db.query(User).filter(User.id.in_(addressee_ids) | User.id.in_(requester_ids)).all()
+
+
+def get_friends_from(db: Session, user_id: int) -> list[User]:
+    logger.debug(f"Fetching incoming friends for user {user_id}")
     requester_ids = select(Friendship.requester_id).where(
         Friendship.addressee_id == user_id, Friendship.status == FriendshipStatus.ACCEPTED
     )
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 
-def get_following(db: Session, user_id: int) -> list[User]:
-    logger.debug(f"Fetching following list for user {user_id}")
-    addressee_ids = select(Friendship.addressee_id).where(
-        Friendship.requester_id == user_id, Friendship.status == FriendshipStatus.ACCEPTED
-    )
-    return db.query(User).filter(User.id.in_(addressee_ids)).all()
-
-
-def get_pending_requests(db: Session, user_id: int) -> list[User]:
-    logger.debug(f"Fetching pending follow requests for user {user_id}")
+def get_pending_friend_requests(db: Session, user_id: int) -> list[User]:
+    logger.debug(f"Fetching pending friend requests for user {user_id}")
     requester_ids = select(Friendship.requester_id).where(
         Friendship.addressee_id == user_id, Friendship.status == FriendshipStatus.PENDING
     )
     return db.query(User).filter(User.id.in_(requester_ids)).all()
 
 
-def get_pending_requests_detailed(db: Session, user_id: int) -> list[dict]:
+def get_incoming_friend_requests(db: Session, user_id: int) -> list[dict]:
     from backend.schemas.user import UserOut
 
-    logger.debug(f"Fetching detailed pending requests for user {user_id}")
+    logger.debug(f"Fetching incoming friend requests for user {user_id}")
     friendships = (
         db.query(Friendship)
         .filter(Friendship.addressee_id == user_id, Friendship.status == FriendshipStatus.PENDING)
@@ -78,8 +81,8 @@ def get_pending_requests_detailed(db: Session, user_id: int) -> list[dict]:
     ]
 
 
-def get_sent_requests(db: Session, user_id: int) -> list[dict]:
-    logger.debug(f"Fetching sent follow requests for user {user_id}")
+def get_sent_friend_requests(db: Session, user_id: int) -> list[dict]:
+    logger.debug(f"Fetching sent friend requests for user {user_id}")
     friendships = (
         db.query(Friendship)
         .filter(Friendship.requester_id == user_id, Friendship.status == FriendshipStatus.PENDING)
@@ -98,11 +101,13 @@ def search_users(db: Session, current_user_id: int, query: str = "", limit: int 
     return q.limit(limit).all()
 
 
-def follow_user(db: Session, current_user_id: int, target_user_id: int) -> str:
-    logger.info(f"User {current_user_id} attempting to follow user {target_user_id}")
+def send_friend_request(db: Session, current_user_id: int, target_user_id: int) -> str:
+    logger.info(
+        f"User {current_user_id} attempting to send friend request to user {target_user_id}"
+    )
     if current_user_id == target_user_id:
-        logger.warning(f"User {current_user_id} attempted to follow themselves")
-        raise ValueError("Cannot follow yourself")
+        logger.warning(f"User {current_user_id} attempted to send friend request to themselves")
+        raise ValueError("Cannot send friend request to yourself")
     existing = (
         db.query(Friendship)
         .filter(
@@ -117,12 +122,12 @@ def follow_user(db: Session, current_user_id: int, target_user_id: int) -> str:
         raise ValueError("Request already sent")
     db.add(Friendship(requester_id=current_user_id, addressee_id=target_user_id))
     db.commit()
-    logger.info(f"User {current_user_id} sent follow request to user {target_user_id}")
+    logger.info(f"User {current_user_id} sent friend request to user {target_user_id}")
     return "pending"
 
 
-def accept_follow(db: Session, current_user_id: int, requester_id: int) -> str:
-    logger.info(f"User {current_user_id} accepting follow request from user {requester_id}")
+def accept_friend_request(db: Session, current_user_id: int, requester_id: int) -> str:
+    logger.info(f"User {current_user_id} accepting friend request from user {requester_id}")
     friendship = (
         db.query(Friendship)
         .filter(
@@ -134,17 +139,17 @@ def accept_follow(db: Session, current_user_id: int, requester_id: int) -> str:
     )
     if not friendship:
         logger.warning(
-            f"No pending follow request found from user {requester_id} to user {current_user_id}"
+            f"No pending friend request found from user {requester_id} to user {current_user_id}"
         )
         raise LookupError("No pending request")
     friendship.status = FriendshipStatus.ACCEPTED
     db.commit()
-    logger.info(f"User {current_user_id} accepted follow request from user {requester_id}")
+    logger.info(f"User {current_user_id} accepted friend request from user {requester_id}")
     return "accepted"
 
 
-def unfollow_user(db: Session, current_user_id: int, target_user_id: int) -> None:
-    logger.info(f"User {current_user_id} unfollowing user {target_user_id}")
+def remove_friend(db: Session, current_user_id: int, target_user_id: int) -> None:
+    logger.info(f"User {current_user_id} removing friend {target_user_id}")
     friendship = (
         db.query(Friendship)
         .filter(
@@ -166,7 +171,7 @@ def unfollow_user(db: Session, current_user_id: int, target_user_id: int) -> Non
         raise LookupError("No friendship found")
     db.delete(friendship)
     db.commit()
-    logger.info(f"User {current_user_id} unfollowed user {target_user_id}")
+    logger.info(f"User {current_user_id} removed friend {target_user_id}")
 
 
 def get_user_activities(

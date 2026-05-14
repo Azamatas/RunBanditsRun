@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUser, getUserActivities, followUser, acceptFollow, unfollowUser, getFollowing, getSentRequests, getPendingRequests } from "../api/users";
+import { getUser, getUserActivities, sendFriendRequest, acceptFriendRequest, removeFriend, getFriends, getSentFriendRequests, getIncomingFriendRequests } from "../api/users";
 import ActivityCard from "../components/ActivityCard";
 import ActivityFilters from "../components/ActivityFilters";
 import SportIcon from "../components/SportIcon";
@@ -48,48 +48,48 @@ export default function UserProfile() {
     queryFn: () => getUserActivities(userId, { limit: 50 }),
   });
 
-  const { data: following } = useQuery({
-    queryKey: ["following"],
-    queryFn: getFollowing,
+  const { data: friends } = useQuery({
+    queryKey: ["friends"],
+    queryFn: getFriends,
   });
 
-  const { data: sentRequests } = useQuery({
-    queryKey: ["sentRequests"],
-    queryFn: getSentRequests,
+  const { data: sentFriendRequests } = useQuery({
+    queryKey: ["sentFriendRequests"],
+    queryFn: getSentFriendRequests,
   });
 
-  const { data: pendingRequests } = useQuery({
-    queryKey: ["pendingRequests"],
-    queryFn: getPendingRequests,
+  const { data: incomingFriendRequests } = useQuery({
+    queryKey: ["incomingFriendRequests"],
+    queryFn: getIncomingFriendRequests,
   });
 
-  const followingIds = new Set((following ?? []).map((u) => u.id));
-  const pendingOutgoingIds = new Set((sentRequests ?? []).map((r) => r.addressee_id));
-  const pendingIncomingIds = new Set((pendingRequests ?? []).map((r) => r.requester_id));
+  const friendIds = new Set((friends ?? []).map((u) => u.id));
+  const pendingOutgoingIds = new Set((sentFriendRequests ?? []).map((r) => r.addressee_id));
+  const pendingIncomingIds = new Set((incomingFriendRequests ?? []).map((r) => r.requester_id));
 
-  const followMutation = useMutation({
-    mutationFn: followUser,
+  const sendFriendRequestMutation = useMutation({
+    mutationFn: sendFriendRequest,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
-      qc.invalidateQueries({ queryKey: ["sentRequests"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
+      qc.invalidateQueries({ queryKey: ["sentFriendRequests"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
 
-  const unfollowMutation = useMutation({
-    mutationFn: unfollowUser,
+  const removeFriendMutation = useMutation({
+    mutationFn: removeFriend,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
       qc.invalidateQueries({ queryKey: ["searchUsers"] });
     },
   });
 
-  const acceptMutation = useMutation({
-    mutationFn: acceptFollow,
+  const acceptFriendRequestMutation = useMutation({
+    mutationFn: acceptFriendRequest,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["following"] });
-      qc.invalidateQueries({ queryKey: ["pendingRequests"] });
-      qc.invalidateQueries({ queryKey: ["sentRequests"] });
+      qc.invalidateQueries({ queryKey: ["friends"] });
+      qc.invalidateQueries({ queryKey: ["incomingFriendRequests"] });
+      qc.invalidateQueries({ queryKey: ["sentFriendRequests"] });
     },
   });
 
@@ -102,22 +102,22 @@ export default function UserProfile() {
   }
 
   const isSelf = currentUser && String(profileUser.id) === String(currentUser.id);
-  let followStatus = null;
+  let friendStatus = null;
   if (!isSelf) {
-    if (followingIds.has(profileUser.id)) followStatus = "accepted";
-    else if (pendingIncomingIds.has(profileUser.id)) followStatus = "incoming";
-    else if (pendingOutgoingIds.has(profileUser.id)) followStatus = "pending";
+    if (friendIds.has(profileUser.id)) friendStatus = "accepted";
+    else if (pendingIncomingIds.has(profileUser.id)) friendStatus = "incoming";
+    else if (pendingOutgoingIds.has(profileUser.id)) friendStatus = "pending";
   }
 
   let actionBtn = null;
-  if (followStatus === "accepted") {
-    actionBtn = <button className="btn-ghost btn-sm follow-btn follow-btn-following" onClick={() => unfollowMutation.mutate(profileUser.id)} disabled={unfollowMutation.isPending}>Following</button>;
-  } else if (followStatus === "pending") {
-    actionBtn = <button className="btn-sm follow-btn follow-btn-pending" disabled>Pending</button>;
-  } else if (followStatus === "incoming") {
-    actionBtn = <button className="btn-primary btn-sm follow-btn" onClick={() => acceptMutation.mutate(profileUser.id)} disabled={acceptMutation.isPending}>Accept</button>;
-  } else if (followStatus === null && !isSelf) {
-    actionBtn = <button className="btn-primary btn-sm follow-btn" onClick={() => followMutation.mutate(profileUser.id)} disabled={followMutation.isPending}>Follow</button>;
+  if (friendStatus === "accepted") {
+    actionBtn = <button className="btn-ghost btn-sm friend-btn friend-btn-accepted" onClick={() => removeFriendMutation.mutate(profileUser.id)} disabled={removeFriendMutation.isPending}>Friends</button>;
+  } else if (friendStatus === "pending") {
+    actionBtn = <button className="btn-sm friend-btn friend-btn-pending" disabled>Request Sent</button>;
+  } else if (friendStatus === "incoming") {
+    actionBtn = <button className="btn-primary btn-sm friend-btn" onClick={() => acceptFriendRequestMutation.mutate(profileUser.id)} disabled={acceptFriendRequestMutation.isPending}>Accept</button>;
+  } else if (friendStatus === null && !isSelf) {
+    actionBtn = <button className="btn-primary btn-sm friend-btn" onClick={() => sendFriendRequestMutation.mutate(profileUser.id)} disabled={sendFriendRequestMutation.isPending}>Add Friend</button>;
   }
 
   const filtered = sportFilter === "all"

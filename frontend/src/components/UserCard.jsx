@@ -10,19 +10,19 @@ export default function UserCard({ user, status, onFollow, onAccept, onUnfollow,
 
   let actionBtn;
   if (status === "accepted") {
-    actionBtn = <button className="btn-ghost btn-sm follow-btn follow-btn-following" onClick={onUnfollow} disabled={loading}>Following</button>;
+    actionBtn = <button className="btn-ghost btn-sm friend-btn friend-btn-accepted" onClick={onUnfollow} disabled={loading}>Friends</button>;
   } else if (status === "pending") {
-    actionBtn = <button className="btn-sm follow-btn follow-btn-pending" disabled>Pending</button>;
+    actionBtn = <button className="btn-sm friend-btn friend-btn-pending" disabled>Request Sent</button>;
   } else if (status === "incoming") {
     actionBtn = (
-      <button className="btn-primary btn-sm follow-btn" onClick={onAccept} disabled={loading}>
+      <button className="btn-primary btn-sm friend-btn" onClick={onAccept} disabled={loading}>
         Accept
       </button>
     );
   } else {
     actionBtn = (
-      <button className="btn-primary btn-sm follow-btn" onClick={onFollow} disabled={loading}>
-        Follow
+      <button className="btn-primary btn-sm friend-btn" onClick={onFollow} disabled={loading}>
+        Add Friend
       </button>
     );
   }

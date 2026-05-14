@@ -3,13 +3,13 @@
 ## 3 Main User Paths
 
 ### 1. Log an Activity
-User authenticates → fills in activity details (type, title, distance, duration, elevation) → sets visibility (public / friends-only / private) → activity is saved with the user as owner → appears in the feeds of followers who have permission to see it
+User authenticates - fills in activity details (type, title, distance, duration, elevation) - sets visibility (public / friends-only / private) - activity is saved with the user as owner - appears in the feeds of friends who have permission to see it
 
 ### 2. Explore the Social Feed
-User opens home feed → sees activities from followed athletes filtered by visibility rules → gives kudos on an activity → optionally drills into a specific activity to view its map, splits, and stats
+User opens home feed - sees activities from friends filtered by visibility rules - gives kudos on an activity - optionally drills into a specific activity to view its map, splits, and stats
 
 ### 3. View Personal Progress
-User opens their profile → views their full activity history filtered by sport type or date range → sees aggregate stats (total distance, total elevation, personal records per segment) → views a specific segment effort and compares it against their own past efforts on that segment
+User opens their profile - views their full activity history filtered by sport type or date range - sees aggregate stats (total distance, total elevation, personal records per segment) - views a specific segment effort and compares it against their own past efforts on that segment
 
 ---
 
@@ -28,18 +28,18 @@ User opens their profile → views their full activity history filtered by sport
 │                    FastAPI Backend                       │
 │                                                         │
 │  Routers:                                               │
-│    /auth          → register, login, refresh token      │
-│    /users         → profile CRUD, follow/unfollow       │
-│    /activities    → create, read, update, delete        │
-│    /feed          → paginated friend/public feed        │
-│    /segments      → segment list, leaderboard           │
-│    /stats         → personal aggregates, PRs            │
+│    /auth          - register, login, refresh token      │
+│    /users         - profile CRUD, friend requests       │
+│    /activities    - create, read, update, delete        │
+│    /feed          - paginated friend/public feed        │
+│    /segments      - segment list, leaderboard           │
+│    /stats         - personal aggregates, PRs            │
 │                                                         │
 │  Services (business logic layer):                       │
-│    AuthService    → JWT issue & verify                  │
-│    FeedService    → visibility-aware feed query         │
-│    ActivityService→ ownership check, visibility filter  │
-│    StatsService   → aggregate & PR computation          │
+│    AuthService    - JWT issue & verify                  │
+│    FeedService    - visibility-aware feed query         │
+│    ActivityService - ownership check, visibility filter  │
+│    StatsService   - aggregate & PR computation          │
 │                                                         │
 │  Middleware: JWT auth guard, CORS                       │
 └─────────────────────┬───────────────────────────────────┘
@@ -50,16 +50,16 @@ User opens their profile → views their full activity history filtered by sport
 │  User            – id, username, email, password_hash,  │
 │                    bio, location, created_at            │
 │                                                         │
-│  Friendship      – requester_id → addressee_id,         │
+│  Friendship      - requester_id - addressee_id,         │
 │                    status (pending / accepted)          │
 │                                                         │
-│  Activity        – id, owner_id (FK→User),              │
+│  Activity        - id, owner_id (FK->User),              │
 │                    title, sport_type, distance,         │
 │                    duration, elevation, polyline,       │
 │                    visibility (public/friends/private), │
 │                    started_at, created_at               │
 │                                                         │
-│  ActivityAthlete – activity_id, user_id  ← "with whom" │
+│  ActivityAthlete - activity_id, user_id  - "with whom" │
 │                    (many-to-many: friends in activity)  │
 │                                                         │
 │  Segment         – id, name, polyline, distance         │
@@ -87,7 +87,7 @@ Visibility rules enforced by `ActivityService` on every read:
 | `friends` | Owner + accepted friends of the owner |
 | `private` | Owner only |
 
-The feed query (`FeedService`) joins `Activity` → `Friendship` and filters by the requesting user's friend list and the activity's `visibility` field before returning results.
+The feed query (`FeedService`) joins `Activity` - `Friendship` and filters by the requesting user's friend list and the activity's `visibility` field before returning results.
 
 ---
 

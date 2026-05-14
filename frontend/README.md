@@ -14,7 +14,7 @@ frontend/src/
     auth.js            login, register, refreshToken
     activities.js      CRUD + kudos endpoints
     feed.js            GET /feed/
-    users.js           user profiles, follow/unfollow, search
+    users.js           user profiles, friend requests, search
     segments.js        CRUD + efforts
   context/
     AuthContext.jsx     Auth state provider (user, tokens, login/logout)
@@ -39,7 +39,7 @@ frontend/src/
     EditProfileModal.jsx  Edit bio/location modal
     MapView.jsx          Leaflet map for polylines
     SportIcon.jsx        SVG sport icons + KudosIcon
-    UserCard.jsx         User card with follow/unfollow + profile link
+    UserCard.jsx         User card with friend request actions + profile link
     LeaderboardTable.jsx Segment leaderboard table
   constants/
     images.js           Static image URLs (thumbnails, hero, empty states)

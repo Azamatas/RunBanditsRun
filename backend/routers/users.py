@@ -36,40 +36,42 @@ def update_me(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/me/followers", response_model=list[UserOut])
-def list_followers(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    logger.debug(f"User {current_user.id} requested followers list")
-    return user_service.get_followers(db, current_user.id)
+@router.get("/me/friends", response_model=list[UserOut])
+def list_friends(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    logger.debug(f"User {current_user.id} requested friends list")
+    return user_service.get_friends(db, current_user.id)
 
 
-@router.get("/me/following", response_model=list[UserOut])
-def list_following(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    logger.debug(f"User {current_user.id} requested following list")
-    return user_service.get_following(db, current_user.id)
-
-
-@router.get("/me/pending", response_model=list[UserOut])
-def list_pending_requests(
+@router.get("/me/friends/incoming", response_model=list[UserOut])
+def list_friends_from(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.debug(f"User {current_user.id} requested pending follow requests")
-    return user_service.get_pending_requests(db, current_user.id)
+    logger.debug(f"User {current_user.id} requested incoming friends list")
+    return user_service.get_friends_from(db, current_user.id)
 
 
-@router.get("/me/requests")
-def list_pending_requests_detailed(
+@router.get("/me/friend-requests/pending", response_model=list[UserOut])
+def list_pending_friend_requests(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.debug(f"User {current_user.id} requested detailed pending requests")
-    return user_service.get_pending_requests_detailed(db, current_user.id)
+    logger.debug(f"User {current_user.id} requested pending friend requests")
+    return user_service.get_pending_friend_requests(db, current_user.id)
 
 
-@router.get("/me/sent-requests")
-def list_sent_requests(
+@router.get("/me/friend-requests/incoming")
+def list_incoming_friend_requests(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.debug(f"User {current_user.id} requested sent follow requests")
-    return user_service.get_sent_requests(db, current_user.id)
+    logger.debug(f"User {current_user.id} requested incoming friend requests")
+    return user_service.get_incoming_friend_requests(db, current_user.id)
+
+
+@router.get("/me/friend-requests/sent")
+def list_sent_friend_requests(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    logger.debug(f"User {current_user.id} requested sent friend requests")
+    return user_service.get_sent_friend_requests(db, current_user.id)
 
 
 @router.get("/search")
@@ -109,42 +111,42 @@ def list_user_activities(
     return result
 
 
-@router.post("/{user_id}/follow", status_code=201)
-def follow_user(
+@router.post("/{user_id}/friend-request", status_code=201)
+def send_friend_request(
     user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.info(f"User {current_user.id} following user {user_id}")
+    logger.info(f"User {current_user.id} sending friend request to user {user_id}")
     try:
-        status = user_service.follow_user(db, current_user.id, user_id)
-        logger.info(f"Follow status: {status}")
+        status = user_service.send_friend_request(db, current_user.id, user_id)
+        logger.info(f"Friend request status: {status}")
     except ValueError as e:
-        logger.warning(f"Follow failed: {e}")
+        logger.warning(f"Friend request failed: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     return {"status": status}
 
 
-@router.post("/{user_id}/accept", status_code=200)
-def accept_follow(
+@router.post("/{user_id}/accept-friend", status_code=200)
+def accept_friend_request(
     user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.info(f"User {current_user.id} accepting follow from user {user_id}")
+    logger.info(f"User {current_user.id} accepting friend request from user {user_id}")
     try:
-        status = user_service.accept_follow(db, current_user.id, user_id)
-        logger.info(f"Accept follow status: {status}")
+        status = user_service.accept_friend_request(db, current_user.id, user_id)
+        logger.info(f"Accept friend request status: {status}")
     except LookupError as e:
-        logger.warning(f"Accept follow failed: {e}")
+        logger.warning(f"Accept friend request failed: {e}")
         raise HTTPException(status_code=404, detail=str(e))
     return {"status": status}
 
 
-@router.delete("/{user_id}/unfollow", status_code=204)
-def unfollow_user(
+@router.delete("/{user_id}/friend", status_code=204)
+def remove_friend(
     user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
-    logger.info(f"User {current_user.id} unfollowing user {user_id}")
+    logger.info(f"User {current_user.id} removing friend {user_id}")
     try:
-        user_service.unfollow_user(db, current_user.id, user_id)
-        logger.info(f"User {current_user.id} unfollowed user {user_id}")
+        user_service.remove_friend(db, current_user.id, user_id)
+        logger.info(f"User {current_user.id} removed friend {user_id}")
     except LookupError as e:
-        logger.warning(f"Unfollow failed: {e}")
+        logger.warning(f"Remove friend failed: {e}")
         raise HTTPException(status_code=404, detail=str(e))

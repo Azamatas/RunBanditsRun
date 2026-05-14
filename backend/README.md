@@ -11,7 +11,7 @@ backend/
   models/            SQLAlchemy ORM models
     user.py            User model
     activity.py        Activity model
-    friendship.py      Follow/request model
+    friendship.py      Friend request model
     kudos.py           Kudos model
     segment.py         Segment + SegmentEffort models
   schemas/           Pydantic request/response schemas
@@ -22,7 +22,7 @@ backend/
     stats.py            StatsOut
   routers/           FastAPI route handlers
     auth.py             POST /auth/login, /auth/register, /auth/refresh
-    users.py            /users/me, /users/{id}, follow, search
+    users.py            /users/me, /users/{id}, friend requests, search
     activities.py       /activities/ CRUD
     feed.py             /feed/ with owner_username + user_has_kudos
     kudos.py            /activities/{id}/kudos, delete returns JSON

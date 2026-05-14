@@ -12,13 +12,14 @@
 
 ## 3. Social Graph
 - Search users by username (`GET /users/search?q=`)
-- Send follow request (`POST /users/{id}/follow`)
-- Accept follow request (`POST /users/{id}/accept`)
-- View pending requests received (`GET /users/me/requests`)
-- View pending requests sent (`GET /users/me/sent-requests`)
-- View followers (`GET /users/me/followers`)
-- View following (`GET /users/me/following`)
-- Unfollow (`DELETE /users/{id}/unfollow`)
+- Send friend request (`POST /users/{id}/friend-request`)
+- Accept friend request (`POST /users/{id}/accept-friend`)
+- View incoming friend requests (`GET /users/me/friend-requests/incoming`)
+- View sent friend requests (`GET /users/me/friend-requests/sent`)
+- View pending friend requests (`GET /users/me/friend-requests/pending`)
+- View friends from incoming requests (`GET /users/me/friends/incoming`)
+- View all friends (`GET /users/me/friends`)
+- Remove friend (`DELETE /users/{id}/friend`)
 
 ## 4. Activity CRUD
 - Create activity: title, sport type, distance, duration, elevation, polyline, visibility, tagged athletes (`POST /activities/`)
