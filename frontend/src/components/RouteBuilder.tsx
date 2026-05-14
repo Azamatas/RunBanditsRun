@@ -4,6 +4,8 @@ import polylineCodec from "@mapbox/polyline";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+export const ROUTE_DRAFT_KEY = "route_builder_draft";
+
 const DEFAULT_CENTER = [51.505, -0.09];
 
 function haversineKm([lat1, lon1], [lat2, lon2]) {

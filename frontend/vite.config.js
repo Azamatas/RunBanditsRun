@@ -10,5 +10,12 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
+    fs: {
+      // Don't let Vite walk into test output / build artifacts
+      deny: ["playwright-report/**", "test-results/**", "dist/**"],
+    },
+  },
+  optimizeDeps: {
+    entries: ["index.html"],
   },
 });
