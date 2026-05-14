@@ -31,22 +31,11 @@ const SPORT_COLORS = {
   hike: "var(--sport-hike)",
 };
 
-const PR_LABELS = {
-  fastest_5k: "Fastest 5K",
-  fastest_10k: "Fastest 10K",
-  longest_run: "Longest Run",
-  biggest_climb: "Biggest Climb",
-};
-
-function fmtPR(key, value) {
-  if (key.startsWith("fastest")) {
-    const m = Math.floor(value / 60);
-    const s = value % 60;
-    return `${m}:${String(s).padStart(2, "0")}`;
-  }
-  if (key === "longest_run") return `${(value / 1000).toFixed(1)} km`;
-  if (key === "biggest_climb") return `${value}m`;
-  return value;
+function fmtTime(seconds) {
+  if (seconds == null) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 export default function Profile() {
@@ -71,8 +60,8 @@ export default function Profile() {
     ? Object.entries(stats.totals).filter(([, v]) => v.count > 0)
     : [];
 
-  const prs = stats?.personal_records
-    ? Object.entries(stats.personal_records).filter(([, v]) => v != null)
+  const prs = Array.isArray(stats?.personal_records)
+    ? stats.personal_records.filter((pr) => pr?.best_time != null)
     : [];
 
   return (
@@ -100,15 +89,15 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Personal Records */}
+      {/* Personal Records — one row per segment best */}
       {prs.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <h3 className="section-title">Personal Records</h3>
           <div className="pr-grid">
-            {prs.map(([key, value]) => (
-              <div className="pr-card" key={key}>
-                <div className="pr-card-value">{fmtPR(key, value)}</div>
-                <div className="pr-card-label">{PR_LABELS[key] ?? key}</div>
+            {prs.map((pr) => (
+              <div className="pr-card" key={pr.segment_id}>
+                <div className="pr-card-value">{fmtTime(pr.best_time)}</div>
+                <div className="pr-card-label">Segment #{pr.segment_id}</div>
               </div>
             ))}
           </div>
