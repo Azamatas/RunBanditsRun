@@ -88,8 +88,8 @@ export default function Social() {
   // Build connections list: friends + sent requests
   const connections = [
     ...friends.map((f) => ({ ...f, status: "accepted" })),
-    ...sentFriendRequests.map((req) => ({
-      ...req.addressee,
+    ...sentFriendRequests.map((req: any) => ({
+      ...(req.addressee ?? { id: req.addressee_id, username: `#${req.addressee_id}` }),
       status: "pending",
       requestId: req.id,
     })),

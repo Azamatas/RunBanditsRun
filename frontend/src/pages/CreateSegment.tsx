@@ -55,7 +55,7 @@ export default function CreateSegment() {
           </div>
 
           {mutation.isError && (
-            <div className="error">{mutation.error?.response?.data?.detail ?? "Failed to create segment"}</div>
+            <div className="error">{(mutation.error as any)?.response?.data?.detail ?? "Failed to create segment"}</div>
           )}
 
           <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending} style={{ marginTop: 8 }}>

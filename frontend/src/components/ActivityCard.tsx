@@ -1,20 +1,22 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { giveKudos, removeKudos } from "../api/activities";
 import { useAuth } from "../context/AuthContext";
 import SportIcon, { KudosIcon } from "./SportIcon";
 import { SPORT_THUMBNAILS } from "../constants/images";
+import type { Activity, SportType } from "../types/api";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
   "#0d9488", "#a16207", "#6d28d9",
 ];
 
-function avatarColor(id) {
+function avatarColor(id: number) {
   return AVATAR_COLORS[id % AVATAR_COLORS.length];
 }
 
-function fmt(seconds) {
+function fmt(seconds?: number | null): string {
   if (!seconds) return "—";
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -22,7 +24,7 @@ function fmt(seconds) {
   return h > 0 ? `${h}h ${m}m` : `${m}m ${String(s).padStart(2, "0")}s`;
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr: string): string {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
   if (diff < 60) return "just now";
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
@@ -31,28 +33,34 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-export default function ActivityCard({ activity, queryKey, style }) {
+interface ActivityCardProps {
+  activity: Activity;
+  queryKey: QueryKey;
+  style?: CSSProperties;
+}
+
+export default function ActivityCard({ activity, queryKey, style }: ActivityCardProps) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
   const hasKudos = activity.user_has_kudos ?? false;
 
   const kudosMutation = useMutation({
-    mutationFn: () => hasKudos ? removeKudos(activity.id) : giveKudos(activity.id),
+    mutationFn: () => (hasKudos ? removeKudos(activity.id) : giveKudos(activity.id)),
     onMutate: async () => {
       await qc.cancelQueries({ queryKey });
-      const prev = qc.getQueryData(queryKey);
-      qc.setQueryData(queryKey, (old) => {
+      const prev = qc.getQueryData<Activity[]>(queryKey);
+      qc.setQueryData<Activity[]>(queryKey, (old) => {
         if (!old) return old;
         return old.map((a) =>
           a.id === activity.id
             ? { ...a, user_has_kudos: !hasKudos, kudos_count: hasKudos ? a.kudos_count - 1 : a.kudos_count + 1 }
-            : a
+            : a,
         );
       });
       return { prev };
     },
-    onError: (err, vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.prev) qc.setQueryData(queryKey, context.prev);
     },
     onSettled: () => {
@@ -67,11 +75,13 @@ export default function ActivityCard({ activity, queryKey, style }) {
       ? fmt(Math.round(activity.duration / (activity.distance / 1000)))
       : null;
 
+  const thumb = SPORT_THUMBNAILS[activity.sport_type as SportType] ?? SPORT_THUMBNAILS.run;
+
   return (
     <div className="activity-card" style={style}>
       <div
         className="activity-card-image"
-        style={{ backgroundImage: `url(${SPORT_THUMBNAILS[activity.sport_type] ?? SPORT_THUMBNAILS.run})` }}
+        style={{ backgroundImage: `url(${thumb})` }}
       >
         <div className="activity-card-image-overlay">
           <span className={`badge badge-${activity.sport_type} badge-on-image`}>
@@ -84,7 +94,7 @@ export default function ActivityCard({ activity, queryKey, style }) {
       <div className="activity-card-body">
         <div className="activity-card-header">
           <Link to={`/users/${activity.owner_id}`} className="avatar avatar-sm" style={{ background: avatarColor(activity.owner_id), textDecoration: "none" }}>
-            {username[0].toUpperCase()}
+            {username[0]?.toUpperCase() ?? "?"}
           </Link>
           <div className="activity-card-user">
             <Link to={`/users/${activity.owner_id}`} style={{ textDecoration: "none", color: "inherit" }}>

@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
+import type { User } from "../types/api";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
   "#0d9488", "#a16207", "#6d28d9",
 ];
 
-export default function UserCard({ user, status, onFollow, onAccept, onUnfollow, onCancel, loading }) {
+export type FriendStatus = "accepted" | "pending" | "incoming" | null;
+
+interface UserCardProps {
+  user: User;
+  status: FriendStatus;
+  onFollow?: () => void;
+  onAccept?: () => void;
+  onUnfollow?: () => void;
+  onCancel?: () => void;
+  loading?: boolean;
+}
+
+export default function UserCard({ user, status, onFollow, onAccept, onUnfollow, onCancel, loading }: UserCardProps) {
   const color = AVATAR_COLORS[user.id % AVATAR_COLORS.length];
 
   let actionBtn;

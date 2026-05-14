@@ -42,8 +42,8 @@ export default function ActivityDetail() {
     mutationFn: () => hasKudos ? removeKudos(id) : giveKudos(id),
     onMutate: async () => {
       await qc.cancelQueries({ queryKey: ["activity", id] });
-      const prev = qc.getQueryData(["activity", id]);
-      qc.setQueryData(["activity", id], (old) => {
+      const prev = qc.getQueryData<any>(["activity", id]);
+      qc.setQueryData<any>(["activity", id], (old: any) => {
         if (!old) return old;
         return { ...old, user_has_kudos: !hasKudos, kudos_count: hasKudos ? old.kudos_count - 1 : old.kudos_count + 1 };
       });

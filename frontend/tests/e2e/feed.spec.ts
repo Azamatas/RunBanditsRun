@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs } from "../helpers/auth.js";
+import { SEEDED, loginAs } from "../helpers/auth";
 
 test.describe("Feed", () => {
   test.beforeEach(async ({ page, request }) => {

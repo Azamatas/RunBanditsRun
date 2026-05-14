@@ -128,25 +128,24 @@ export default function UserProfile() {
     ? (activities ?? [])
     : (activities ?? []).filter((a) => a.sport_type === sportFilter);
 
-  const sportTotals = {};
-  for (const a of activities ?? []) {
+  type Totals = { count: number; total_distance: number; total_elevation: number };
+  const sportTotals: Record<string, Totals> = {};
+  for (const a of (activities ?? []) as any[]) {
     const s = a.sport_type;
     if (!sportTotals[s]) sportTotals[s] = { count: 0, total_distance: 0, total_elevation: 0 };
     sportTotals[s].count += 1;
     sportTotals[s].total_distance += a.distance ?? 0;
     sportTotals[s].total_elevation += a.elevation ?? 0;
   }
-  const sportTotalEntries = Object.entries(sportTotals).filter(([, v]) => v.count > 0);
+  const sportTotalEntries: [string, Totals][] = Object.entries(sportTotals).filter(([, v]) => v.count > 0);
 
   return (
     <div className="page">
-      <div className="card-flush" style={{ marginBottom: 20 }}>
-        <div className="profile-cover" style={{ backgroundImage: `url(${HERO_IMAGES.profile})` }}>
-          <div className="profile-cover-overlay" />
-        </div>
+      <div className="card-flush profile-card" style={{ backgroundImage: `url(${HERO_IMAGES.profile})`, marginBottom: 20 }}>
+        <div className="profile-cover-overlay" />
         <div className="profile-hero">
           <div className="avatar avatar-xl profile-avatar" style={{ background: avatarColor(profileUser.id) }}>
-            {profileUser.username[0].toUpperCase()}
+            {profileUser.username?.[0]?.toUpperCase() ?? "?"}
           </div>
           <div className="profile-info">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -173,8 +172,10 @@ export default function UserProfile() {
                   <div className="stat-sport-icon" style={{ color: SPORT_COLORS[sport] }}>
                     <SportIcon sport={sport} size={28} color="currentColor" />
                   </div>
-                  <div className="stat-value">{data.count}</div>
-                  <div className="stat-label">{label}</div>
+                  <div className="stat-headline">
+                    <span className="stat-value">{data.count}</span>
+                    <span className="stat-label">{label}</span>
+                  </div>
                   <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     {(data.total_distance / 1000).toFixed(1)} km
                     {data.total_elevation > 0 && <> · {data.total_elevation.toFixed(0)}m elev</>}

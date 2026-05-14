@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth.js";
-import { unique } from "../helpers/data.js";
+import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth";
+import { unique } from "../helpers/data";
 
 test.describe("Profile", () => {
   test("own profile renders avatar, username and joined date", async ({ page, request }) => {

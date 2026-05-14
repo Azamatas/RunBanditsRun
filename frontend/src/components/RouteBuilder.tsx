@@ -54,10 +54,18 @@ function fmtTime(totalMinutes) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function RouteBuilder({ onChange, onDistance, onDuration }) {
-  const [points, setPoints] = useState([]);
-  const [segTimes, setSegTimes] = useState([]); // minutes per segment (string for input)
-  const [center, setCenter] = useState(DEFAULT_CENTER);
+type LatLng = [number, number];
+
+interface RouteBuilderProps {
+  onChange: (encodedPolyline: string) => void;
+  onDistance?: (km: number) => void;
+  onDuration?: (totalMinutes: number) => void;
+}
+
+export default function RouteBuilder({ onChange, onDistance, onDuration }: RouteBuilderProps) {
+  const [points, setPoints] = useState<LatLng[]>([]);
+  const [segTimes, setSegTimes] = useState<string[]>([]); // minutes per segment (string for input)
+  const [center, setCenter] = useState<LatLng>(DEFAULT_CENTER as LatLng);
 
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
@@ -118,7 +126,7 @@ export default function RouteBuilder({ onChange, onDistance, onDuration }) {
             />
           ))}
           {Array.from({ length: segCount }, (_, i) => {
-            const mid = [(points[i][0] + points[i + 1][0]) / 2, (points[i][1] + points[i + 1][1]) / 2];
+            const mid: LatLng = [(points[i][0] + points[i + 1][0]) / 2, (points[i][1] + points[i + 1][1]) / 2];
             const label = segTimes[i] ? `${segTimes[i]} min` : `seg ${i + 1}`;
             return (
               <Marker key={`mid-${i}`} position={mid} icon={segLabelIcon(label)}>

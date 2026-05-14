@@ -1,20 +1,22 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser, registerFresh } from "../helpers/auth.js";
+import { SEEDED, loginAs, loginFreshUser, registerFresh } from "../helpers/auth";
 
 test.describe("Friends & Explore", () => {
   test("search filters athletes by username", async ({ page, request }) => {
     await loginAs(page, request, SEEDED.testUser);
-    await page.goto("/explore");
+    await page.goto("/social");
 
     await page.getByPlaceholder(/search athletes/i).fill("marc");
-    await expect(page.getByText(SEEDED.marc.username)).toBeVisible();
-    await expect(page.getByText(SEEDED.nina.username)).toHaveCount(0);
+    // Scope to the Search Results section (Connections above is unaffected by search)
+    const resultsSection = page.locator("h3.section-title", { hasText: /search results/i }).locator("..");
+    await expect(resultsSection.locator(".user-card", { hasText: SEEDED.marc.username }).first()).toBeVisible();
+    await expect(resultsSection.locator(".user-card", { hasText: SEEDED.nina.username })).toHaveCount(0);
   });
 
   test("send a friend request — button switches to 'Request Sent'", async ({ page, request }) => {
     // Use a fresh user so the request slot is open
     await loginFreshUser(page, request, "fr_send");
-    await page.goto("/explore");
+    await page.goto("/social");
 
     await page.getByPlaceholder(/search athletes/i).fill("nina");
     const card = page.locator(".user-card").filter({ hasText: SEEDED.nina.username });
@@ -50,7 +52,7 @@ test.describe("Friends & Explore", () => {
       [userA.access_token, userA.refresh_token ?? ""],
     );
 
-    await page.goto("/explore");
+    await page.goto("/social");
     await expect(page.getByRole("heading", { name: /friend requests/i })).toBeVisible();
     // Scope the Accept click to the requests section (the first matching card)
     const incomingCard = page.locator(".user-card").filter({ hasText: SEEDED.testUser.username }).first();
@@ -101,12 +103,12 @@ test.describe("Friends & Explore", () => {
 
   test("UserCard shows the right CTA per relationship state", async ({ page, request }) => {
     await loginAs(page, request, SEEDED.testUser);
-    await page.goto("/explore");
+    await page.goto("/social");
     await page.getByPlaceholder(/search athletes/i).fill("");
     // At least the seeded users should be visible with some CTA each
     const card = page.locator(".user-card").first();
     await expect(card).toBeVisible();
-    const ctas = ["Add Friend", "Friends", "Request Sent", "Accept"];
+    const ctas = ["Add Friend", "Unfriend", "Request Sent", "Accept", "Cancel"];
     let matched = false;
     for (const name of ctas) {
       if (await card.getByRole("button", { name }).count() > 0) { matched = true; break; }

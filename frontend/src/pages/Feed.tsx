@@ -1,13 +1,14 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { REFETCH_INTERVAL_MS } from "../constants/query";
 import { Link } from "react-router-dom";
 import { getFeed } from "../api/feed";
 import { useAuth } from "../context/AuthContext";
 import ActivityCard from "../components/ActivityCard";
 import { HERO_IMAGES, EMPTY_STATE_IMAGES } from "../constants/images";
+import type { Activity } from "../types/api";
 
 const PAGE_SIZE = 20;
+const FEED_KEY: readonly ["feed", number] = ["feed", 0] as const;
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -22,8 +23,8 @@ export default function Feed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const { data: allActivities = [], isLoading, isError } = useQuery({
-    queryKey: ["feed", 0],
+  const { data: allActivities = [], isLoading, isError } = useQuery<Activity[]>({
+    queryKey: FEED_KEY as unknown as readonly unknown[],
     queryFn: () => getFeed(0),
     refetchInterval: 5000,
   });
@@ -31,9 +32,9 @@ export default function Feed() {
   const loadMore = useCallback(async () => {
     setLoadingMore(true);
     try {
-      const current = qc.getQueryData(["feed", 0]) ?? [];
+      const current = qc.getQueryData<Activity[]>(FEED_KEY as unknown as readonly unknown[]) ?? [];
       const more = await getFeed(current.length);
-      qc.setQueryData(["feed", 0], [...current, ...more]);
+      qc.setQueryData<Activity[]>(FEED_KEY as unknown as readonly unknown[], [...current, ...more]);
       setHasMore(more.length >= PAGE_SIZE);
     } finally {
       setLoadingMore(false);

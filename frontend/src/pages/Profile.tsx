@@ -116,8 +116,10 @@ export default function Profile() {
                   <div className="stat-sport-icon" style={{ color: SPORT_COLORS[sport] }}>
                     <SportIcon sport={sport} size={28} color="currentColor" />
                   </div>
-                  <div className="stat-value">{data.count}</div>
-                  <div className="stat-label">{label}</div>
+                  <div className="stat-headline">
+                    <span className="stat-value">{data.count}</span>
+                    <span className="stat-label">{label}</span>
+                  </div>
                   <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     {(data.total_distance / 1000).toFixed(1)} km
                     {data.total_elevation != null && data.total_elevation > 0 && (

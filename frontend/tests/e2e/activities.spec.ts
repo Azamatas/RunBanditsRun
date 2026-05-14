@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth.js";
-import { unique } from "../helpers/data.js";
+import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth";
+import { unique } from "../helpers/data";
 
 test.describe("Activities — create / view / edit / delete", () => {
   test("logs an activity and lands on its detail page", async ({ page, request }) => {

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, registerFresh, clearAuth } from "../helpers/auth.js";
-import { unique } from "../helpers/data.js";
+import { SEEDED, loginAs, registerFresh, clearAuth } from "../helpers/auth";
+import { unique } from "../helpers/data";
 
 test.describe("Authentication", () => {
   test.beforeEach(async ({ page }) => {

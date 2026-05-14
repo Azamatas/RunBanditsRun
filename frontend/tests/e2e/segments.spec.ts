@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs } from "../helpers/auth.js";
-import { unique } from "../helpers/data.js";
+import { SEEDED, loginAs } from "../helpers/auth";
+import { unique } from "../helpers/data";
 
 test.describe("Segments", () => {
   test.beforeEach(async ({ page, request }) => {

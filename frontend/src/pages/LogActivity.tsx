@@ -182,8 +182,8 @@ export default function LogActivity() {
                       padding: "8px 12px", background: "none", border: "none",
                       fontSize: "var(--text-sm)", cursor: "pointer", fontFamily: "var(--font)",
                     }}
-                    onMouseEnter={(e) => (e.target.style.background = "var(--gray-50)")}
-                    onMouseLeave={(e) => (e.target.style.background = "none")}
+                    onMouseEnter={(e) => ((e.target as HTMLElement).style.background = "var(--gray-50)")}
+                    onMouseLeave={(e) => ((e.target as HTMLElement).style.background = "none")}
                   >
                     {f.username}
                   </button>
