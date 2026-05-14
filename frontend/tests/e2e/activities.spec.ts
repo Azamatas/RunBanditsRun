@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth";
+import { loginFreshUser, registerFresh, createActivityForUser } from "../helpers/auth";
 import { unique } from "../helpers/data";
 
 test.describe("Activities — create / view / edit / delete", () => {
-  test("logs an activity and lands on its detail page", async ({ page, request }) => {
+  test("adds an activity and lands on its detail page", async ({ page, request }) => {
     await loginFreshUser(page, request, "act_create");
-    await page.goto("/log");
+    await page.goto("/add-activity");
 
     const title = unique("Run");
     await page.getByPlaceholder("Morning Run").fill(title);
@@ -22,7 +22,7 @@ test.describe("Activities — create / view / edit / delete", () => {
 
   test("activity detail shows stats for an owned activity and edit/delete controls", async ({ page, request }) => {
     await loginFreshUser(page, request, "act_view");
-    await page.goto("/log");
+    await page.goto("/add-activity");
 
     const title = unique("Tempo");
     await page.getByPlaceholder("Morning Run").fill(title);
@@ -31,7 +31,6 @@ test.describe("Activities — create / view / edit / delete", () => {
     await page.getByRole("button", { name: /save activity/i }).click();
     await expect(page).toHaveURL(/\/activities\/\d+$/);
 
-    // Owner sees Edit + Delete, no Give Kudos
     await expect(page.getByRole("link", { name: /^edit$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /^delete$/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /give kudos/i })).toHaveCount(0);
@@ -39,7 +38,7 @@ test.describe("Activities — create / view / edit / delete", () => {
 
   test("editing an activity updates title and visibility", async ({ page, request }) => {
     await loginFreshUser(page, request, "act_edit");
-    await page.goto("/log");
+    await page.goto("/add-activity");
 
     const originalTitle = unique("Edit");
     await page.getByPlaceholder("Morning Run").fill(originalTitle);
@@ -52,7 +51,6 @@ test.describe("Activities — create / view / edit / delete", () => {
     await expect(page).toHaveURL(/\/edit$/);
 
     const newTitle = `${originalTitle} — edited`;
-    // EditActivity title input has no placeholder, so target by required attr
     await page.locator("form input[required]").first().fill(newTitle);
     await page.getByRole("button", { name: /friends/i }).first().click();
     await page.getByRole("button", { name: /save changes/i }).click();
@@ -64,7 +62,7 @@ test.describe("Activities — create / view / edit / delete", () => {
 
   test("deleting an activity navigates back to the feed", async ({ page, request }) => {
     await loginFreshUser(page, request, "act_del");
-    await page.goto("/log");
+    await page.goto("/add-activity");
     await page.getByPlaceholder("Morning Run").fill(unique("Doomed"));
     await page.getByPlaceholder("5.0").fill("3");
     await page.getByPlaceholder("30").fill("20");
@@ -77,20 +75,18 @@ test.describe("Activities — create / view / edit / delete", () => {
   });
 
   test("a non-owner sees the Give Kudos button on someone else's activity", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
-    await page.goto("/feed");
+    const user1 = await registerFresh(request, "kudos_owner");
+    const activity = await createActivityForUser(request, user1.access_token);
+    await loginFreshUser(page, request, "kudos_visitor");
+    await page.goto(`/activities/${activity.id}`);
 
-    const card = page.locator(".activity-card").filter({ has: page.getByRole("button", { name: /kudos/i }) }).first();
-    await card.locator(".activity-card-title").click();
-    await expect(page).toHaveURL(/\/activities\/\d+$/);
     await expect(page.getByRole("button", { name: /give kudos|kudos given/i })).toBeVisible();
   });
 
   test("required title prevents form submission", async ({ page, request }) => {
     await loginFreshUser(page, request, "act_req");
-    await page.goto("/log");
+    await page.goto("/add-activity");
     await page.getByRole("button", { name: /save activity/i }).click();
-    // Should remain on /log because the required Title input blocks submission
-    await expect(page).toHaveURL(/\/log$/);
+    await expect(page).toHaveURL(/\/add-activity$/);
   });
 });

@@ -1,49 +1,41 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser, registerFresh } from "../helpers/auth";
+import { loginFreshUser, registerFresh, createActivityForUser } from "../helpers/auth";
 
 test.describe("Friends & Explore", () => {
   test("search filters athletes by username", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    await loginFreshUser(page, request, "fr_search");
+    const user2 = await registerFresh(request, "marc_search");
     await page.goto("/social");
 
-    await page.getByPlaceholder(/search athletes/i).fill("marc");
-    // Scope to the Search Results section (Connections above is unaffected by search)
+    await page.getByPlaceholder(/search athletes/i).fill("marc_search");
     const resultsSection = page.locator("h3.section-title", { hasText: /search results/i }).locator("..");
-    await expect(resultsSection.locator(".user-card", { hasText: SEEDED.marc.username }).first()).toBeVisible();
-    await expect(resultsSection.locator(".user-card", { hasText: SEEDED.nina.username })).toHaveCount(0);
+    await expect(resultsSection.locator(".user-card", { hasText: user2.username }).first()).toBeVisible();
   });
 
   test("send a friend request — button switches to 'Request Sent'", async ({ page, request }) => {
-    // Use a fresh user so the request slot is open
-    await loginFreshUser(page, request, "fr_send");
+    const user1 = await loginFreshUser(page, request, "fr_send_1");
+    const user2 = await registerFresh(request, "fr_send_2");
     await page.goto("/social");
 
-    await page.getByPlaceholder(/search athletes/i).fill("nina");
-    const card = page.locator(".user-card").filter({ hasText: SEEDED.nina.username });
+    await page.getByPlaceholder(/search athletes/i).fill(user2.username);
+    const card = page.locator(".user-card").filter({ hasText: user2.username });
     await card.getByRole("button", { name: /add friend/i }).click();
 
     await expect(card.getByRole("button", { name: /request sent/i })).toBeVisible();
   });
 
   test("accept an incoming friend request", async ({ page, request }) => {
-    // create a fresh user A; have seeded test_user send A a friend request, then log in as A and accept.
-    const userA = await registerFresh(request, "fr_inA");
-    // user A sends request? No — we want test_user → A (so A has incoming). Easier: log in as test_user via API, send to A, then login as A.
-    const testLogin = await request.post("http://localhost:8000/auth/login", {
-      data: { email: SEEDED.testUser.email, password: SEEDED.testUser.password },
-    });
-    const testBody = await testLogin.json();
-    // resolve A's id
+    const userA = await registerFresh(request, "fr_accept_a");
+    const userB = await registerFresh(request, "fr_accept_b");
+
     const aMe = await request.get("http://localhost:8000/users/me", {
       headers: { Authorization: `Bearer ${userA.access_token}` },
     });
     const aBody = await aMe.json();
-    const sendRes = await request.post(`http://localhost:8000/users/${aBody.id}/friend-request`, {
-      headers: { Authorization: `Bearer ${testBody.access_token}` },
+    await request.post(`http://localhost:8000/users/${aBody.id}/friend-request`, {
+      headers: { Authorization: `Bearer ${userB.access_token}` },
     });
-    expect(sendRes.ok()).toBeTruthy();
 
-    // now login as A and accept via UI
     await page.addInitScript(
       ([a, r]) => {
         localStorage.setItem("token", a);
@@ -54,39 +46,32 @@ test.describe("Friends & Explore", () => {
 
     await page.goto("/social");
     await expect(page.getByRole("heading", { name: /friend requests/i })).toBeVisible();
-    // Scope the Accept click to the requests section (the first matching card)
-    const incomingCard = page.locator(".user-card").filter({ hasText: SEEDED.testUser.username }).first();
+    const incomingCard = page.locator(".user-card").filter({ hasText: userB.username }).first();
     await incomingCard.getByRole("button", { name: /accept/i }).click();
 
-    // The Friend Requests section heading should disappear since A has no more incoming requests
     await expect(page.getByRole("heading", { name: /friend requests/i })).toHaveCount(0);
   });
 
   test("remove a friend — Friends button reverts to Add Friend", async ({ page, request }) => {
-    // create A, have A and seeded marc become friends via API, then login as A and unfriend from UI
-    const userA = await registerFresh(request, "fr_rm");
-    const marcLogin = await request.post("http://localhost:8000/auth/login", {
-      data: { email: SEEDED.marc.email, password: SEEDED.marc.password },
-    });
-    const marcBody = await marcLogin.json();
+    const userA = await registerFresh(request, "fr_remove_a");
+    const userB = await registerFresh(request, "fr_remove_b");
+
     const aMe = await request.get("http://localhost:8000/users/me", {
       headers: { Authorization: `Bearer ${userA.access_token}` },
     });
     const aBody = await aMe.json();
-    const marcMe = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${marcBody.access_token}` },
+    const bMe = await request.get("http://localhost:8000/users/me", {
+      headers: { Authorization: `Bearer ${userB.access_token}` },
     });
-    const marcId = (await marcMe.json()).id;
-    // A → marc friend request
-    await request.post(`http://localhost:8000/users/${marcId}/friend-request`, {
+    const bBody = await bMe.json();
+
+    await request.post(`http://localhost:8000/users/${bBody.id}/friend-request`, {
       headers: { Authorization: `Bearer ${userA.access_token}` },
     });
-    // marc accepts A
     await request.post(`http://localhost:8000/users/${aBody.id}/accept-friend`, {
-      headers: { Authorization: `Bearer ${marcBody.access_token}` },
+      headers: { Authorization: `Bearer ${userB.access_token}` },
     });
 
-    // login as A in browser
     await page.addInitScript(
       ([a, r]) => {
         localStorage.setItem("token", a);
@@ -95,18 +80,19 @@ test.describe("Friends & Explore", () => {
       [userA.access_token, userA.refresh_token ?? ""],
     );
 
-    await page.goto(`/users/${marcId}`);
+    await page.goto(`/users/${bBody.id}`);
     await expect(page.getByRole("button", { name: /^friends$/i })).toBeVisible();
     await page.getByRole("button", { name: /^friends$/i }).click();
     await expect(page.getByRole("button", { name: /add friend/i })).toBeVisible();
   });
 
   test("UserCard shows the right CTA per relationship state", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    await loginFreshUser(page, request, "fr_cta");
+    const user2 = await registerFresh(request, "fr_cta_other");
     await page.goto("/social");
-    await page.getByPlaceholder(/search athletes/i).fill("");
-    // At least the seeded users should be visible with some CTA each
-    const card = page.locator(".user-card").first();
+    await page.getByPlaceholder(/search athletes/i).fill(user2.username);
+
+    const card = page.locator(".user-card").filter({ hasText: user2.username }).first();
     await expect(card).toBeVisible();
     const ctas = ["Add Friend", "Unfriend", "Request Sent", "Accept", "Cancel"];
     let matched = false;

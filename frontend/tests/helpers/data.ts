@@ -1,5 +1,7 @@
+let counter = 0;
+
 export function unique(prefix = "t") {
-  return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  return `${prefix}_${counter++}_${Date.now()}`;
 }
 
 export function activityPayload(overrides = {}) {

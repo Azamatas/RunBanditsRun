@@ -69,8 +69,8 @@ export default function Feed() {
               <img src={EMPTY_STATE_IMAGES.noActivities} alt="Start your journey" />
             </div>
             <h3>No activities yet</h3>
-            <p>Add some friends or log your first activity to get started!</p>
-            <Link to="/log" className="btn-primary">Log Your First Activity</Link>
+            <p>Add some friends or add your first activity to get started!</p>
+            <Link to="/add-activity" className="btn-primary">Add Your First Activity</Link>
           </div>
         </div>
       )}

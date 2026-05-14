@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, registerFresh, clearAuth } from "../helpers/auth";
+import { loginFreshUser, registerFresh, clearAuth } from "../helpers/auth";
 import { unique } from "../helpers/data";
 
 test.describe("Authentication", () => {
@@ -41,10 +41,11 @@ test.describe("Authentication", () => {
     await expect(page.locator(".error")).toBeVisible();
   });
 
-  test("logs in seeded test_user successfully", async ({ page }) => {
+  test("logs in a fresh user successfully", async ({ page, request }) => {
+    const user = await registerFresh(request, "login_test");
     await page.goto("/login");
-    await page.getByPlaceholder("you@example.com").fill(SEEDED.testUser.email);
-    await page.getByPlaceholder("Your password").fill(SEEDED.testUser.password);
+    await page.getByPlaceholder("you@example.com").fill(user.email);
+    await page.getByPlaceholder("Your password").fill(user.password);
     await page.getByRole("button", { name: /^log in$/i }).click();
 
     await expect(page).toHaveURL(/\/feed$/);
@@ -52,7 +53,7 @@ test.describe("Authentication", () => {
 
   test("shows error on wrong credentials", async ({ page }) => {
     await page.goto("/login");
-    await page.getByPlaceholder("you@example.com").fill(SEEDED.testUser.email);
+    await page.getByPlaceholder("you@example.com").fill("nonexistent@test.com");
     await page.getByPlaceholder("Your password").fill("WrongPassword99");
     await page.getByRole("button", { name: /^log in$/i }).click();
 
@@ -67,7 +68,7 @@ test.describe("Authentication", () => {
   });
 
   test("logging out returns user to /login and hides nav links", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    await loginFreshUser(page, request, "logout_test");
     await page.goto("/feed");
     await expect(page.getByRole("link", { name: /^feed$/i })).toBeVisible();
 
@@ -77,13 +78,13 @@ test.describe("Authentication", () => {
   });
 
   test("logged-in user visiting /login is redirected to /feed", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    await loginFreshUser(page, request, "redir_login");
     await page.goto("/login");
     await expect(page).toHaveURL(/\/feed$/);
   });
 
   test("logged-in user visiting /register is redirected to /feed", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    await loginFreshUser(page, request, "redir_register");
     await page.goto("/register");
     await expect(page).toHaveURL(/\/feed$/);
   });

@@ -11,8 +11,10 @@ env/
 # Node
 node_modules/
 
-# Frontend build
+# Frontend
 frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
 
 # IDE
 .idea/

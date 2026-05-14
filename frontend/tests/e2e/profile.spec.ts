@@ -1,18 +1,19 @@
 import { test, expect } from "@playwright/test";
-import { SEEDED, loginAs, loginFreshUser } from "../helpers/auth";
+import { loginFreshUser, createActivityForUser, registerFresh } from "../helpers/auth";
 import { unique } from "../helpers/data";
 
 test.describe("Profile", () => {
   test("own profile renders avatar, username and joined date", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.testUser);
+    const user = await loginFreshUser(page, request, "prof_basic");
     await page.goto("/profile");
 
-    await expect(page.getByRole("heading", { name: SEEDED.testUser.username })).toBeVisible();
+    await expect(page.getByRole("heading", { name: user.username })).toBeVisible();
     await expect(page.getByText(/joined/i)).toBeVisible();
   });
 
   test("training totals show for a user with activities", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.marc);
+    const user = await loginFreshUser(page, request, "prof_totals");
+    await createActivityForUser(request, user.access_token);
     await page.goto("/profile");
     await expect(page.getByText(/training totals/i)).toBeVisible({ timeout: 10000 });
   });
@@ -36,12 +37,15 @@ test.describe("Profile", () => {
   });
 
   test("sport filter pills narrow the activity list", async ({ page, request }) => {
-    await loginAs(page, request, SEEDED.marc);
+    const user = await loginFreshUser(page, request, "prof_filter");
+    await createActivityForUser(request, user.access_token, { sport_type: "run" });
+    await createActivityForUser(request, user.access_token, { sport_type: "ride" });
     await page.goto("/profile");
-    await expect(page.getByRole("heading", { name: SEEDED.marc.username })).toBeVisible();
-    await expect(page.locator(".activity-card").first()).toBeVisible({ timeout: 15000 });
 
-    // Click the Run filter pill (scoped to the .filter-pills container to avoid name collisions)
+    await expect(page.getByRole("heading", { name: user.username })).toBeVisible();
+    const cards = page.locator(".activity-card");
+    await expect(cards.first()).toBeVisible({ timeout: 15000 });
+
     await page.locator(".filter-pill", { hasText: /^Run$/ }).click();
     const sportBadges = page.locator(".activity-card .badge-on-image");
     const count = await sportBadges.count();
@@ -52,10 +56,9 @@ test.describe("Profile", () => {
   });
 
   test("logged-in user navigated to /users/<own-id> is redirected to /profile", async ({ page, request }) => {
-    const me = await loginAs(page, request, SEEDED.testUser);
-    // resolve user id via /users/me
+    const user = await loginFreshUser(page, request, "prof_redir");
     const meRes = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${me.access_token}` },
+      headers: { Authorization: `Bearer ${user.access_token}` },
     });
     const meBody = await meRes.json();
     await page.goto(`/users/${meBody.id}`);

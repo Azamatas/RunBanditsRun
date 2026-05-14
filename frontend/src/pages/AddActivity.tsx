@@ -25,7 +25,7 @@ const SPORTS = [
 
 const VISIBILITIES = ["public", "friends", "private"];
 
-const DRAFT_KEY = "log_activity_draft";
+const DRAFT_KEY = "add_activity_draft";
 const DEFAULT_FORM = {
   title: "",
   sport_type: "run",
@@ -45,7 +45,7 @@ function loadDraft() {
   }
 }
 
-export default function LogActivity() {
+export default function AddActivity() {
   const navigate = useNavigate();
   const draft = loadDraft();
   const [form, setForm] = useState({ ...DEFAULT_FORM, ...(draft?.form ?? {}) });
@@ -102,7 +102,7 @@ export default function LogActivity() {
 
   return (
     <div className="page">
-      <h2 className="section-title" style={{ marginBottom: 24 }}>Log Activity</h2>
+      <h2 className="section-title" style={{ marginBottom: 24 }}>Add Activity</h2>
 
       <div className="card">
         <form onSubmit={handleSubmit}>
