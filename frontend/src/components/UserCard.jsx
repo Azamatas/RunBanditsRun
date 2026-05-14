@@ -30,7 +30,7 @@ export default function UserCard({ user, status, onFollow, onAccept, onUnfollow,
   return (
     <div className="user-card">
       <Link to={`/users/${user.id}`} className="avatar" style={{ background: color, textDecoration: "none" }}>
-        {user.username[0].toUpperCase()}
+        {user.username?.[0]?.toUpperCase() ?? "?"}
       </Link>
       <Link to={`/users/${user.id}`} className="user-card-info" style={{ textDecoration: "none", color: "inherit" }}>
         <div className="user-card-name">{user.username}</div>

@@ -25,17 +25,22 @@ function decode(polyline) {
 
 function FitAll({ positions }) {
   const map = useMap();
+  const key = positions.length;
   useEffect(() => {
-    if (positions.length > 0) map.fitBounds(positions, { padding: [40, 40] });
-  }, [map]); // eslint-disable-line
+    if (key > 0) map.fitBounds(positions, { padding: [40, 40] });
+  }, [map, key]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
-function FlyToSegment({ positions }) {
+function FlyToSegment({ decoded, selectedId }) {
   const map = useMap();
   useEffect(() => {
-    if (positions?.length >= 2) map.flyToBounds(positions, { padding: [60, 60], duration: 0.8 });
-  }, [positions]); // eslint-disable-line
+    if (!selectedId) return;
+    const target = decoded.find((d) => d.seg.id === selectedId);
+    if (target?.positions?.length >= 2) {
+      map.flyToBounds(target.positions, { padding: [60, 60], duration: 0.8 });
+    }
+  }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
   return null;
 }
 
@@ -158,7 +163,7 @@ export default function Segments() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {allPositions.length > 0 && <FitAll positions={allPositions} />}
-          <FlyToSegment positions={decoded.find(d => d.seg.id === selectedId)?.positions} />
+          <FlyToSegment decoded={decoded} selectedId={selectedId} />
           {decoded.map(({ seg, color, positions }) =>
             positions.length >= 2 ? (
               <Polyline

@@ -67,6 +67,7 @@ export default function Login() {
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="you@example.com"
                   autoComplete="email"
+                  required
                 />
               </div>
               <div className="form-group">
@@ -77,6 +78,7 @@ export default function Login() {
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="Your password"
                   autoComplete="current-password"
+                  required
                 />
               </div>
 

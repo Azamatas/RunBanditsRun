@@ -37,7 +37,7 @@ export default function LeaderboardTable({ efforts }) {
       </thead>
       <tbody>
         {efforts.map((e) => (
-          <tr key={`${e.athlete_id}-${e.started_at}`} className={e.athlete_id === user?.id ? "leaderboard-me" : ""}>
+          <tr key={e.athlete_id} className={e.athlete_id === user?.id ? "leaderboard-me" : ""}>
             <td><Medal rank={e.rank} /></td>
             <td>
               <div className="leaderboard-athlete">
@@ -45,15 +45,13 @@ export default function LeaderboardTable({ efforts }) {
                   className="avatar avatar-sm"
                   style={{ background: AVATAR_COLORS[e.athlete_id % AVATAR_COLORS.length] }}
                 >
-                  {e.athlete_username[0].toUpperCase()}
+                  {e.athlete_name?.[0]?.toUpperCase() ?? "?"}
                 </div>
-                {e.athlete_username}
+                {e.athlete_name}
               </div>
             </td>
-            <td className="leaderboard-time">{fmt(e.elapsed_time)}</td>
-            <td style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}>
-              {new Date(e.started_at).toLocaleDateString()}
-            </td>
+            <td className="leaderboard-time">{fmt(e.best_time)}</td>
+            <td style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}>—</td>
           </tr>
         ))}
       </tbody>

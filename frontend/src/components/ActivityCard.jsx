@@ -135,7 +135,7 @@ export default function ActivityCard({ activity, queryKey, style }) {
               disabled={kudosMutation.isPending}
             >
               <KudosIcon size={16} color="currentColor" />
-              <span>{hasKudos ? "Un-kudos" : "Kudos"}</span>
+              <span>Kudos</span>
               <span>({activity.kudos_count})</span>
             </button>
           ) : (

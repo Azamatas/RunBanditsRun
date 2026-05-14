@@ -3,6 +3,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateMe } from "../api/users";
 import { useAuth } from "../context/AuthContext";
 
+function apiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => e.msg).join(", ");
+  return fallback;
+}
+
 export default function EditProfileModal({ onClose }) {
   const { user, setUser } = useAuth();
   const qc = useQueryClient();
@@ -40,6 +48,7 @@ export default function EditProfileModal({ onClose }) {
                 value={form.location}
                 onChange={(e) => setForm({ ...form, location: e.target.value })}
                 placeholder="Portland, OR"
+                maxLength={100}
               />
             </div>
             <div className="form-group">
@@ -49,11 +58,12 @@ export default function EditProfileModal({ onClose }) {
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 placeholder="Tell us about yourself..."
+                maxLength={500}
               />
             </div>
 
             {mutation.isError && (
-              <div className="error">Failed to update profile</div>
+              <div className="error">{apiError(mutation.error, "Failed to update profile")}</div>
             )}
 
             <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>

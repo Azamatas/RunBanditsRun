@@ -13,7 +13,7 @@ export default function SegmentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: segment, isLoading } = useQuery({
+  const { data: segment, isLoading, isError } = useQuery({
     queryKey: ["segment", id],
     queryFn: () => getSegment(id),
   });
@@ -32,10 +32,11 @@ export default function SegmentDetail() {
     );
   }
 
-  if (!segment) {
+  if (isError || !segment) {
     return (
       <div className="page">
-        <div className="error">Segment not found.</div>
+        <div className="error">{isError ? "Failed to load segment." : "Segment not found."}</div>
+        <button className="btn-secondary" onClick={() => navigate(-1)} style={{ marginTop: 12 }}>Back</button>
       </div>
     );
   }

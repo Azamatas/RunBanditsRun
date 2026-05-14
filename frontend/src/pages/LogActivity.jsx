@@ -7,6 +7,14 @@ import SportIcon from "../components/SportIcon";
 import RouteBuilder from "../components/RouteBuilder";
 import { SPORT_THUMBNAILS } from "../constants/images";
 
+function apiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => e.msg).join(", ");
+  return fallback;
+}
+
 const SPORTS = [
   { value: "run", label: "Run" },
   { value: "ride", label: "Ride" },
@@ -205,7 +213,7 @@ export default function LogActivity() {
           </div>
 
           {mutation.isError && (
-            <div className="error">{mutation.error?.response?.data?.detail ?? "Failed to save activity"}</div>
+            <div className="error">{apiError(mutation.error, "Failed to save activity")}</div>
           )}
 
           <button className="btn-primary btn-full" type="submit" disabled={mutation.isPending} style={{ marginTop: 8 }}>

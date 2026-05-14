@@ -1,11 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Polyline, useMap } from "react-leaflet";
 import polylineCodec from "@mapbox/polyline";
 import "leaflet/dist/leaflet.css";
 
 function FitBounds({ positions }) {
   const map = useMap();
-  useMemo(() => {
+  useEffect(() => {
     if (positions.length > 1) {
       map.fitBounds(positions, { padding: [30, 30] });
     }

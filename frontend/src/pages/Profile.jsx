@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getStats } from "../api/users";
+import { getStats, getUserActivities } from "../api/users";
 import ActivityCard from "../components/ActivityCard";
 import ActivityFilters from "../components/ActivityFilters";
 import EditProfileModal from "../components/EditProfileModal";
 import SportIcon from "../components/SportIcon";
 import { useAuth } from "../context/AuthContext";
 import { HERO_IMAGES, EMPTY_STATE_IMAGES } from "../constants/images";
-import client from "../api/client";
 
 const AVATAR_COLORS = [
   "#fc4c02", "#16a34a", "#0284c7", "#9333ea", "#e11d48",
@@ -55,14 +54,15 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [sportFilter, setSportFilter] = useState("all");
 
-  const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: getStats });
+  const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: getStats, enabled: !!user });
 
   const { data: activities } = useQuery({
     queryKey: ["myActivities"],
-    queryFn: () => client.get("/feed/", { params: { limit: 50 } }).then((r) => r.data),
+    queryFn: () => getUserActivities(user.id, { limit: 50 }),
+    enabled: !!user,
   });
 
-  const myActivities = activities?.filter((a) => a.owner_id === user?.id) ?? [];
+  const myActivities = activities ?? [];
   const filtered = sportFilter === "all"
     ? myActivities
     : myActivities.filter((a) => a.sport_type === sportFilter);

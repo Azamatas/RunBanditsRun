@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { getFeed } from "../api/feed";
 import { useAuth } from "../context/AuthContext";
@@ -17,34 +17,33 @@ function getGreeting() {
 
 export default function Feed() {
   const { user } = useAuth();
-  const [extraActivities, setExtraActivities] = useState([]);
+  const qc = useQueryClient();
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const { data: firstPage, isLoading, isError } = useQuery({
+  const { data: allActivities = [], isLoading, isError } = useQuery({
     queryKey: ["feed", 0],
     queryFn: () => getFeed(0),
   });
 
-  const allActivities = [...(firstPage ?? []), ...extraActivities];
-
   const loadMore = useCallback(async () => {
     setLoadingMore(true);
     try {
-      const more = await getFeed(allActivities.length);
-      setExtraActivities((prev) => [...prev, ...more]);
+      const current = qc.getQueryData(["feed", 0]) ?? [];
+      const more = await getFeed(current.length);
+      qc.setQueryData(["feed", 0], [...current, ...more]);
       setHasMore(more.length >= PAGE_SIZE);
     } finally {
       setLoadingMore(false);
     }
-  }, [allActivities.length]);
+  }, [qc]);
 
   return (
     <div className="page">
       <div className="feed-hero" style={{ backgroundImage: `url(${HERO_IMAGES.feed})` }}>
         <div className="feed-hero-overlay">
           <h2 className="feed-greeting">
-            {getGreeting()}, {user?.username?.split("_")[0]}
+            {getGreeting()}{user?.username ? `, ${user.username}` : ""}
           </h2>
           <p className="feed-sub">Here's what your network has been up to.</p>
         </div>

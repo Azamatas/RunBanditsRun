@@ -3,6 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getActivity, updateActivity } from "../api/activities";
 
+function apiError(err, fallback) {
+  const detail = err?.response?.data?.detail;
+  if (!detail) return fallback;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((e) => e.msg).join(", ");
+  return fallback;
+}
+
 const VISIBILITIES = ["public", "friends", "private"];
 
 export default function EditActivity() {
@@ -34,6 +42,7 @@ export default function EditActivity() {
 
   function handleSubmit(e) {
     e.preventDefault();
+    if (!form.title.trim()) return;
     mutation.mutate(form);
   }
 
@@ -77,7 +86,7 @@ export default function EditActivity() {
           </div>
 
           {mutation.isError && (
-            <div className="error">Failed to update activity</div>
+            <div className="error">{apiError(mutation.error, "Failed to update activity")}</div>
           )}
 
           <div style={{ display: "flex", gap: 12 }}>

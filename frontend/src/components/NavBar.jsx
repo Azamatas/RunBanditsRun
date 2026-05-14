@@ -47,8 +47,8 @@ export default function NavBar() {
 
             <div className="nav-user">
               <Link to="/profile" className="nav-avatar-link" title="Profile">
-                <div className="avatar avatar-sm" style={{ background: avatarColor(user.username) }}>
-                  {user.username[0]}
+                <div className="avatar avatar-sm" style={{ background: avatarColor(user.username ?? "") }}>
+                  {user.username?.[0]?.toUpperCase() ?? "?"}
                 </div>
               </Link>
               <button className="btn-ghost btn-sm" onClick={handleLogout}>Log out</button>

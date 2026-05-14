@@ -43,7 +43,6 @@ export default function Register() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (passwordError(form.password)) return;
     mutation.mutate(form);
   }
 
