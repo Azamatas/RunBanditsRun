@@ -39,7 +39,7 @@ class TestCommonActivityDetector:
         
         db.commit()
 
-        detect_common_activities_job()
+        detect_common_activities_job(db=db)
         common_activities = db.query(CommonActivity).all()
         assert len(common_activities) == 1, f"Expected 1 common activity, got {len(common_activities)}"
         
@@ -86,7 +86,7 @@ class TestCommonActivityDetector:
 
         db.commit()
 
-        detect_common_activities_job()
+        detect_common_activities_job(db=db)
 
         common_activities = db.query(CommonActivity).all()
         assert len(common_activities) == 0
@@ -138,7 +138,7 @@ class TestCommonActivityDetector:
 
         db.commit()
 
-        detect_common_activities_job()
+        detect_common_activities_job(db=db)
 
         common_activities = db.query(CommonActivity).all()
         assert len(common_activities) == 2
@@ -181,7 +181,7 @@ class TestCommonActivityDetector:
 
         db.commit()
 
-        detect_common_activities_job()
+        detect_common_activities_job(db=db)
 
         common_activities = db.query(CommonActivity).all()
         assert len(common_activities) == 0
@@ -236,7 +236,7 @@ class TestCommonActivityDetector:
 
         db.commit()
 
-        detect_common_activities_job()
+        detect_common_activities_job(db=db)
 
         common_activities = db.query(CommonActivity).all()
         assert len(common_activities) >= 1

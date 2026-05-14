@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: runbandits
       POSTGRES_DB: runbandits
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
