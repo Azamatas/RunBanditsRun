@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginFreshUser, registerFresh, createActivityForUser } from "../helpers/auth";
+import { loginFreshUser, registerFresh, createActivityForUser, getMe, sendFriendRequest, acceptFriendRequest, establishFriendship } from "../helpers/auth";
 
 test.describe("Friends & Explore", () => {
   test("search filters athletes by username", async ({ page, request }) => {
@@ -28,13 +28,8 @@ test.describe("Friends & Explore", () => {
     const userA = await registerFresh(request, "fr_accept_a");
     const userB = await registerFresh(request, "fr_accept_b");
 
-    const aMe = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${userA.access_token}` },
-    });
-    const aBody = await aMe.json();
-    await request.post(`http://localhost:8000/users/${aBody.id}/friend-request`, {
-      headers: { Authorization: `Bearer ${userB.access_token}` },
-    });
+    const userAInfo = await getMe(request, userA.access_token);
+    await sendFriendRequest(request, userB.access_token, userAInfo.id);
 
     await page.addInitScript(
       ([a, r]) => {
@@ -56,21 +51,7 @@ test.describe("Friends & Explore", () => {
     const userA = await registerFresh(request, "fr_remove_a");
     const userB = await registerFresh(request, "fr_remove_b");
 
-    const aMe = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${userA.access_token}` },
-    });
-    const aBody = await aMe.json();
-    const bMe = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${userB.access_token}` },
-    });
-    const bBody = await bMe.json();
-
-    await request.post(`http://localhost:8000/users/${bBody.id}/friend-request`, {
-      headers: { Authorization: `Bearer ${userA.access_token}` },
-    });
-    await request.post(`http://localhost:8000/users/${aBody.id}/accept-friend`, {
-      headers: { Authorization: `Bearer ${userB.access_token}` },
-    });
+    const { userA: aInfo, userB: bInfo } = await establishFriendship(request, userA.access_token, userB.access_token);
 
     await page.addInitScript(
       ([a, r]) => {
@@ -80,7 +61,7 @@ test.describe("Friends & Explore", () => {
       [userA.access_token, userA.refresh_token ?? ""],
     );
 
-    await page.goto(`/users/${bBody.id}`);
+    await page.goto(`/users/${bInfo.id}`);
     await expect(page.getByRole("button", { name: /^friends$/i })).toBeVisible();
     await page.getByRole("button", { name: /^friends$/i }).click();
     await expect(page.getByRole("button", { name: /add friend/i })).toBeVisible();

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginFreshUser, createActivityForUser, registerFresh } from "../helpers/auth";
+import { loginFreshUser, createActivityForUser, registerFresh, getMe } from "../helpers/auth";
 import { unique } from "../helpers/data";
 
 test.describe("Profile", () => {
@@ -57,11 +57,8 @@ test.describe("Profile", () => {
 
   test("logged-in user navigated to /users/<own-id> is redirected to /profile", async ({ page, request }) => {
     const user = await loginFreshUser(page, request, "prof_redir");
-    const meRes = await request.get("http://localhost:8000/users/me", {
-      headers: { Authorization: `Bearer ${user.access_token}` },
-    });
-    const meBody = await meRes.json();
-    await page.goto(`/users/${meBody.id}`);
+    const me = await getMe(request, user.access_token);
+    await page.goto(`/users/${me.id}`);
     await expect(page).toHaveURL(/\/profile$/);
   });
 });

@@ -70,3 +70,35 @@ export async function registerFreshUserWithActivity(request, prefix = "pw", acti
   const activity = await createActivityForUser(request, user.access_token, activityOverrides);
   return { ...user, activityId: activity.id };
 }
+
+export async function getMe(request, accessToken) {
+  const res = await request.get("http://localhost:8000/users/me", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  expect(res.ok(), `getMe API failed: ${res.status()}`).toBeTruthy();
+  return await res.json();
+}
+
+export async function sendFriendRequest(request, accessToken, targetUserId) {
+  const res = await request.post(`http://localhost:8000/users/${targetUserId}/friend-request`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  expect(res.ok(), `sendFriendRequest API failed: ${res.status()}`).toBeTruthy();
+  return await res.json();
+}
+
+export async function acceptFriendRequest(request, accessToken, requesterUserId) {
+  const res = await request.post(`http://localhost:8000/users/${requesterUserId}/accept-friend`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  expect(res.ok(), `acceptFriendRequest API failed: ${res.status()}`).toBeTruthy();
+  return await res.json();
+}
+
+export async function establishFriendship(request, accessTokenA, accessTokenB) {
+  const userA = await getMe(request, accessTokenA);
+  const userB = await getMe(request, accessTokenB);
+  await sendFriendRequest(request, accessTokenA, userB.id);
+  await acceptFriendRequest(request, accessTokenB, userA.id);
+  return { userA, userB };
+}
