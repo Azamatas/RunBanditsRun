@@ -7,7 +7,7 @@ const AVATAR_COLORS = [
   "#0d9488", "#a16207", "#6d28d9",
 ];
 
-function avatarColor(name) {
+function avatarColor(name: string): string {
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
@@ -37,9 +37,6 @@ export default function NavBar() {
             </NavLink>
             <NavLink to="/social" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
               <span>Social</span>
-            </NavLink>
-            <NavLink to="/segments" className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
-              <span>Segments</span>
             </NavLink>
             <NavLink to="/log" className={({ isActive }) => `nav-link nav-log-btn${isActive ? " active" : ""}`}>
               <span className="nav-log-plus" aria-hidden="true">+</span>

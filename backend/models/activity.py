@@ -1,27 +1,27 @@
 import enum
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
+from geoalchemy2 import Geometry
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.database import Base
 
 if TYPE_CHECKING:
+    from backend.models.common_activity import CommonActivity
     from backend.models.kudos import Kudos
-    from backend.models.segment import SegmentEffort
     from backend.models.user import User
 
 
-class SportType(str, enum.Enum):
+class SportType(enum.StrEnum):
     RUN = "run"
     RIDE = "ride"
-    SWIM = "swim"
     WALK = "walk"
     HIKE = "hike"
 
 
-class Visibility(str, enum.Enum):
+class Visibility(enum.StrEnum):
     PUBLIC = "public"
     FRIENDS = "friends"
     PRIVATE = "private"
@@ -49,6 +49,7 @@ class Activity(Base):
     duration: Mapped[int | None] = mapped_column(Integer)
     elevation: Mapped[float | None] = mapped_column(Float)
     polyline: Mapped[str | None] = mapped_column(Text)
+    path: Mapped[Any] = mapped_column(Geometry(geometry_type="LINESTRING", srid=4326))
     visibility: Mapped[Visibility] = mapped_column(
         Enum(Visibility, name="visibility", values_callable=lambda obj: [e.value for e in obj]),
         default=Visibility.PUBLIC,
@@ -57,12 +58,11 @@ class Activity(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(UTC)
     )
+    common_activity_id: Mapped[int | None] = mapped_column(ForeignKey("common_activities.id"))
 
     owner: Mapped["User"] = relationship(
         "User", foreign_keys=[owner_id], back_populates="activities"
     )
     tagged_athletes: Mapped[list["User"]] = relationship("User", secondary=activity_athletes)
     kudos: Mapped[list["Kudos"]] = relationship("Kudos", back_populates="activity")
-    segment_efforts: Mapped[list["SegmentEffort"]] = relationship(
-        "SegmentEffort", back_populates="activity"
-    )
+    common_activity: Mapped["CommonActivity"] = relationship("CommonActivity", back_populates="activities")

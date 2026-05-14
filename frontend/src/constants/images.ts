@@ -17,7 +17,6 @@ export const HERO_IMAGES = {
   feed: "https://images.unsplash.com/photo-1461897104016-0b3b00b1ea56?w=1200&h=400&fit=crop&crop=center",
   profile: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200&h=400&fit=crop&crop=center",
   explore: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&h=400&fit=crop&crop=center",
-  segments: "https://images.unsplash.com/photo-1486218119243-13883505764c?w=1200&h=400&fit=crop&crop=center",
 };
 
 export const EMPTY_STATE_IMAGES = {

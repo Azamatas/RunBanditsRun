@@ -28,9 +28,12 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/users/:id" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
         <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
-        <Route path="/segments" element={<ProtectedRoute><Segments /></ProtectedRoute>} />
-        <Route path="/segments/new" element={<ProtectedRoute><CreateSegment /></ProtectedRoute>} />
-        <Route path="/segments/:id" element={<ProtectedRoute><SegmentDetail /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/feed" replace />} />
+      </Routes>
+    </>
+  );
+}
+tedRoute><SegmentDetail /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/feed" replace />} />
       </Routes>
     </>

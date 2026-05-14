@@ -45,7 +45,7 @@
 
 ## 8. Personal Statistics
 - Aggregated stats per sport: count, distance, elevation, duration (`GET /stats/me`)
-- Personal records on segments (`GET /stats/me`, `personal_records`)
+- Personal records
 
 ## 9. Map Visualization
 - Activity route rendering via polyline data

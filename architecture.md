@@ -62,11 +62,6 @@ User opens their profile - views their full activity history filtered by sport t
 │  ActivityAthlete - activity_id, user_id  - "with whom" │
 │                    (many-to-many: friends in activity)  │
 │                                                         │
-│  Segment         – id, name, polyline, distance         │
-│                                                         │
-│  SegmentEffort   – id, segment_id, activity_id,         │
-│                    athlete_id, elapsed_time, started_at │
-│                                                         │
 │  Kudos           – id, activity_id, user_id, created_at │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -110,3 +105,7 @@ The feed query (`FeedService`) joins `Activity` - `Friendship` and filters by th
 - **Friendship is bidirectional with status**: using a `status` column (pending/accepted) on a single directed row avoids duplicate rows and makes friend requests natural.
 - **Activity visibility at the service layer**: visibility is checked in Python before returning data, keeping the rule in one place rather than scattered across queries.
 - **SegmentEffort as a derived entity**: segment efforts are created when an activity is saved (matched against known segments), decoupling activity logging from segment tracking.
+the service layer**: visibility is checked in Python before returning data, keeping the rule in one place rather than scattered across queries.
+
+ted when an activity is saved (matched against known segments), decoupling activity logging from segment tracking.
+), decoupling activity logging from segment tracking.

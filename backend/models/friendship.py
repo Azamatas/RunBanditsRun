@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from backend.models.user import User
 
 
-class FriendshipStatus(str, enum.Enum):
+class FriendshipStatus(enum.StrEnum):
     PENDING = "pending"
     ACCEPTED = "accepted"
 

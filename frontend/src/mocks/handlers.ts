@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import {
-  currentUser, users, activities, stats, segments, segmentEfforts,
+  currentUser, users, activities, stats,
   friendships, createActivity, enrichActivity, getFriendsOf,
   getPendingRequestsFor, addFriendship, acceptFriendship,
 } from "./data";
@@ -9,6 +9,7 @@ const MOCK_TOKEN = "mock-jwt-token";
 const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
 
 export const handlers = [
+  // Auth
   http.post("/api/auth/register", () =>
     HttpResponse.json({ access_token: MOCK_TOKEN, token_type: "bearer" }),
   ),
@@ -16,7 +17,8 @@ export const handlers = [
     HttpResponse.json({ access_token: MOCK_TOKEN, token_type: "bearer" }),
   ),
 
-http.get("/api/users/me", () => HttpResponse.json(currentUser)),
+  // Users
+  http.get("/api/users/me", () => HttpResponse.json(currentUser)),
 
   http.patch("/api/users/me", async ({ request }) => {
     const body = await request.json();
@@ -67,6 +69,7 @@ http.get("/api/users/me", () => HttpResponse.json(currentUser)),
     return new HttpResponse(null, { status: 204 });
   }),
 
+  // Feed
   http.get("/api/feed/", ({ request }) => {
     const url = new URL(request.url);
     const limit = Number(url.searchParams.get("limit")) || 20;
@@ -74,6 +77,7 @@ http.get("/api/users/me", () => HttpResponse.json(currentUser)),
     return HttpResponse.json(activities.slice(offset, offset + limit).map(enrichActivity));
   }),
 
+  // Activities
   http.post("/api/activities/", async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json(createActivity(body));
@@ -99,6 +103,7 @@ http.get("/api/users/me", () => HttpResponse.json(currentUser)),
     return new HttpResponse(null, { status: 204 });
   }),
 
+  // Kudos
   http.post("/api/activities/:id/kudos", ({ params }) => {
     const activity = activities.find((a) => a.id === Number(params.id));
     if (!activity) return new HttpResponse(null, { status: 404 });
@@ -113,37 +118,6 @@ http.get("/api/users/me", () => HttpResponse.json(currentUser)),
     return new HttpResponse(null, { status: 204 });
   }),
 
+  // Stats
   http.get("/api/stats/me", () => HttpResponse.json(stats)),
-
-  http.get("/api/segments/", () => {
-    const enriched = segments.map((seg) => {
-      const myBest = segmentEfforts
-        .filter((e) => e.segment_id === seg.id && e.athlete_id === currentUser.id)
-        .sort((a, b) => a.elapsed_time - b.elapsed_time)[0];
-      return { ...seg, my_best_time: myBest?.elapsed_time ?? null };
-    });
-    return HttpResponse.json(enriched);
-  }),
-
-  http.get("/api/segments/:id", ({ params }) => {
-    const seg = segments.find((s) => s.id === Number(params.id));
-    if (!seg) return new HttpResponse(null, { status: 404 });
-    return HttpResponse.json(seg);
-  }),
-
-  http.get("/api/segments/:id/leaderboard", ({ params }) => {
-    const segId = Number(params.id);
-    const efforts = segmentEfforts
-      .filter((e) => e.segment_id === segId)
-      .sort((a, b) => a.elapsed_time - b.elapsed_time)
-      .map((e, i) => ({
-        rank: i + 1,
-        athlete_id: e.athlete_id,
-        athlete_username: userMap[e.athlete_id]?.username ?? "unknown",
-        elapsed_time: e.elapsed_time,
-        started_at: e.started_at,
-        activity_id: e.activity_id,
-      }));
-    return HttpResponse.json(efforts);
-  }),
 ];

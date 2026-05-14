@@ -40,7 +40,6 @@ frontend/src/
     MapView.jsx          Leaflet map for polylines
     SportIcon.jsx        SVG sport icons + KudosIcon
     UserCard.jsx         User card with friend request actions + profile link
-    LeaderboardTable.jsx Segment leaderboard table
   constants/
     images.js           Static image URLs (thumbnails, hero, empty states)
 ```
@@ -51,4 +50,4 @@ frontend/src/
 - **Auth:** `AuthContext` stores access + refresh tokens in localStorage. `client.js` Axios interceptor auto-refreshes on 401, queues concurrent requests, retries.
 - **Data fetching:** `@tanstack/react-query` for all server state. Mutations use optimistic updates with cache rollback on error.
 - **Routing:** `react-router-dom` v6 with nested `ProtectedRoute` guards.
-- **Styling:** Plain CSS with custom properties (see `index.css`). No CSS framework.
+- **Styling:** Plain CSS with custom properties (see `index.css`). No CSS framework.ndex.css`). No CSS framework.

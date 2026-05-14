@@ -8,11 +8,6 @@ class StatsTotals(BaseModel):
     total_duration: int
 
 
-class PersonalRecord(BaseModel):
-    segment_id: int
-    best_time: int
-
-
 class StatsResponse(BaseModel):
     totals: dict[str, StatsTotals]
-    personal_records: list[PersonalRecord]
+    personal_records: list[dict] = []

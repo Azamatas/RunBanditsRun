@@ -4,7 +4,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.models.activity import Activity, SportType
-from backend.models.segment import SegmentEffort
 
 logger = logging.getLogger("runbanditsrun.services.stats")
 
@@ -35,14 +34,5 @@ def get_totals(db: Session, user_id: int, sport_type: SportType | None = None) -
 
 def get_personal_records(db: Session, user_id: int) -> list[dict]:
     logger.debug(f"Fetching personal records for user {user_id}")
-    best = (
-        db.query(
-            SegmentEffort.segment_id,
-            func.min(SegmentEffort.elapsed_time).label("best_time"),
-        )
-        .filter(SegmentEffort.athlete_id == user_id)
-        .group_by(SegmentEffort.segment_id)
-        .all()
-    )
-
-    return [{"segment_id": r.segment_id, "best_time": r.best_time} for r in best]
+    # TODO
+    return []

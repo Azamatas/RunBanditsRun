@@ -8,6 +8,19 @@ Table users {
   created_at DATETIME [default: `datetime.utcnow`]
 }
 
+Table common_activities {
+  id INTEGER [pk, increment]
+  name VARCHAR(200) [not null]
+  polyline TEXT
+  path GEOMETRY(LINESTRING, 4326)
+  distance FLOAT
+  sport_type VARCHAR(20)
+
+  indexes {
+    (path) [type: GIST]
+  }
+}
+
 Table activities {
   id INTEGER [pk, increment]
   owner_id INTEGER [not null]
@@ -17,12 +30,16 @@ Table activities {
   duration INTEGER
   elevation FLOAT
   polyline TEXT
+  path GEOMETRY(LINESTRING, 4326)
   visibility EVISIBILITY [default: 'public']
   started_at DATETIME
   created_at DATETIME [default: `datetime.utcnow`]
+  common_activity_id INTEGER
 
   indexes {
     (owner_id)
+    (path) [type: GIST]
+    (common_activity_id)
   }
 }
 
@@ -81,7 +98,6 @@ Table activity_athletes {
 Enum ESPORT_TYPE {
   run
   ride
-  swim
   walk
   hike
 }
@@ -105,9 +121,7 @@ Ref: friendships.addressee_id > users.id
 Ref: kudos.activity_id > activities.id
 Ref: kudos.user_id > users.id
 
-Ref: segment_efforts.segment_id > segments.id
-Ref: segment_efforts.activity_id > activities.id
-Ref: segment_efforts.athlete_id > users.id
-
 Ref: activity_athletes.activity_id > activities.id
 Ref: activity_athletes.user_id > users.id
+
+Ref: activities.common_activity_id > common_activities.id

@@ -33,7 +33,6 @@ backend/
     auth_service.py     JWT creation/validation, password hashing
     activity_service.py Activity CRUD helpers
     feed_service.py     Feed assembly with enrichment
-    segment_service.py  Segment + effort logic
     stats_service.py    Stats aggregation
   tests/             Pytest test suite
 ```

@@ -66,8 +66,7 @@ tests/
     ├── feed.spec.js          # feed render, kudos, pagination, navigation
     ├── activities.spec.js    # create / view / edit / delete / kudos visibility
     ├── profile.spec.js       # own profile, stats, edit modal, filters
-    ├── friends.spec.js       # search, request, accept, remove
-    └── segments.spec.js      # list, detail, leaderboard, create
+    └── friends.spec.js       # search, request, accept, remove
 ```
 
 ## Conventions
@@ -102,4 +101,6 @@ curl -fsS http://localhost:5173/ >/dev/null && echo "frontend ok"
 4. The DB accumulates test data over time. Re-seed when it gets noisy:
    ```bash
    .venv/bin/python3 seed.py && .venv/bin/python3 /tmp/seed_extras.py
+   ```
+bin/python3 /tmp/seed_extras.py
    ```

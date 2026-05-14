@@ -32,8 +32,8 @@ def mock_hash_password():
 def db():
     connection = engine.connect()
     transaction = connection.begin()
-    Session = sessionmaker(bind=connection)
-    session = Session()
+    session_local = sessionmaker(bind=connection)
+    session = session_local()
 
     nested = connection.begin_nested()
 

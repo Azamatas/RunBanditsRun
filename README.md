@@ -1,6 +1,6 @@
 # RunBanditsRun
 
-Social fitness tracker. Log runs/rides/swims, view a feed, give kudos, add friends, create segments.
+Social fitness tracker. Log runs/rides/walks/hikes, view a feed, give kudos, add friends.
 
 ## Stack
 

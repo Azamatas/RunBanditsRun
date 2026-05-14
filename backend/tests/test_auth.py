@@ -5,7 +5,7 @@ class TestRegister:
             json={
                 "username": "newuser",
                 "email": "new@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert resp.status_code == 200
@@ -20,7 +20,7 @@ class TestRegister:
             json={
                 "username": "another",
                 "email": user.email,
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert resp.status_code == 400
@@ -33,7 +33,7 @@ class TestRegister:
             json={
                 "username": user.username,
                 "email": "unique@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert resp.status_code == 400
@@ -68,7 +68,7 @@ class TestLogin:
             "/auth/login",
             json={
                 "email": "test@example.com",
-                "password": "password123",
+                "password": "Password123",
             },
         )
         assert resp.status_code == 200

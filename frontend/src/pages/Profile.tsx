@@ -13,29 +13,49 @@ const AVATAR_COLORS = [
   "#0d9488", "#a16207", "#6d28d9",
 ];
 
-function avatarColor(id) {
+function avatarColor(id: number): string {
   return AVATAR_COLORS[id % AVATAR_COLORS.length];
 }
 
-const SPORT_LABELS = {
+const SPORT_LABELS: Record<string, string> = {
   run: "Running",
   ride: "Cycling",
   walk: "Walking",
   hike: "Hiking",
 };
 
-const SPORT_COLORS = {
+const SPORT_COLORS: Record<string, string> = {
   run: "var(--sport-run)",
   ride: "var(--sport-ride)",
   walk: "var(--sport-walk)",
   hike: "var(--sport-hike)",
 };
 
-function fmtTime(seconds) {
-  if (seconds == null) return "—";
+function fmtTime(seconds: number | null): string {
+  if (seconds == null) return "-";
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+interface SportData {
+  count: number;
+  total_distance: number;
+  total_elevation?: number;
+}
+
+interface PersonalRecord {
+  best_time: number | null;
+}
+
+interface Stats {
+  totals?: Record<string, SportData>;
+  personal_records?: PersonalRecord[];
+}
+
+interface Activity {
+  id: number;
+  sport_type: string;
 }
 
 export default function Profile() {
@@ -43,9 +63,9 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [sportFilter, setSportFilter] = useState("all");
 
-  const { data: stats } = useQuery({ queryKey: ["stats"], queryFn: getStats, enabled: !!user });
+  const { data: stats } = useQuery<Stats>({ queryKey: ["stats"], queryFn: getStats, enabled: !!user });
 
-  const { data: activities } = useQuery({
+  const { data: activities } = useQuery<Activity[]>({
     queryKey: ["myActivities"],
     queryFn: () => getUserActivities(user.id, { limit: 50 }),
     enabled: !!user,
@@ -88,14 +108,15 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Personal Records */}
       {prs.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <h3 className="section-title">Personal Records</h3>
           <div className="pr-grid">
-            {prs.map((pr) => (
-              <div className="pr-card" key={pr.segment_id}>
-                <div className="pr-card-value">{fmtTime(pr.best_time)}</div>
-                <div className="pr-card-label">Segment #{pr.segment_id}</div>
+            {prs.map((pr, i) => (
+              <div className="pr-card" key={i}>
+                <div className="pr-card-value">{fmtTime(pr.best_time!)}</div>
+                <div className="pr-card-label">Record #{i + 1}</div>
               </div>
             ))}
           </div>
@@ -120,7 +141,7 @@ export default function Profile() {
                   <div style={{ marginTop: 8, fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     {(data.total_distance / 1000).toFixed(1)} km
                     {data.total_elevation != null && data.total_elevation > 0 && (
-                      <> · {data.total_elevation.toFixed(0)}m elev</>
+                      <> \u00b7 {data.total_elevation.toFixed(0)}m elev</>
                     )}
                   </div>
                 </div>
