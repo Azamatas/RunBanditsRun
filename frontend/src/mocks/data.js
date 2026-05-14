@@ -45,7 +45,6 @@ export function getPendingRequestsFor(userId) {
   return friendships.filter((f) => f.status === "pending" && f.addressee_id === userId);
 }
 
-// Polylines (small Portland-area routes encoded with @mapbox/polyline)
 const POLYLINES = {
   forest_park: "yvotGxwrkVm@gAcAkBq@yAiA_CgAgCe@aBMkA?eALgAd@mAv@gAhAeAfA_@|@IpAHpAb@lA|@hAdAbAjAh@jANfA",
   waterfront: "k`ptGhaqkV?iE?_F?{D?mE?oC?gD?aC?gBBqDDuBHiB",

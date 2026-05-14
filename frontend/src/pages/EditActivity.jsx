@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getActivity, updateActivity } from "../api/activities";
+import RouteBuilder from "../components/RouteBuilder";
 
 function apiError(err, fallback) {
   const detail = err?.response?.data?.detail;
@@ -23,11 +24,11 @@ export default function EditActivity() {
     queryFn: () => getActivity(id),
   });
 
-  const [form, setForm] = useState({ title: "", visibility: "public" });
+  const [form, setForm] = useState({ title: "", visibility: "public", polyline: null, distance: null, duration: null });
 
   useEffect(() => {
     if (activity) {
-      setForm({ title: activity.title, visibility: activity.visibility });
+      setForm({ title: activity.title, visibility: activity.visibility, polyline: activity.polyline ?? null, distance: activity.distance ?? null, duration: activity.duration ?? null });
     }
   }, [activity]);
 
@@ -68,6 +69,17 @@ export default function EditActivity() {
               onChange={(e) => setForm({ ...form, title: e.target.value })}
             />
           </div>
+
+          {activity?.polyline != null && (
+            <div className="form-group">
+              <label>Route</label>
+              <RouteBuilder
+                initialPolyline={activity.polyline}
+                onChange={(polyline) => setForm((f) => ({ ...f, polyline: polyline || null }))}
+                onDistance={(km) => setForm((f) => ({ ...f, distance: km > 0 ? Math.round(km * 1000) : f.distance }))}
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label>Visibility</label>

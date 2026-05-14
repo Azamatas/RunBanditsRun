@@ -68,7 +68,6 @@ export default function Profile() {
     <div className="page">
       {editing && <EditProfileModal onClose={() => setEditing(false)} />}
 
-      {/* Profile hero with cover photo */}
       <div className="card-flush profile-card" style={{ backgroundImage: `url(${HERO_IMAGES.profile})`, marginBottom: 20 }}>
         <div className="profile-cover-overlay" />
         <div className="profile-hero">
@@ -89,7 +88,6 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Personal Records — one row per segment best */}
       {prs.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <h3 className="section-title">Personal Records</h3>
@@ -104,7 +102,6 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Stats dashboard */}
       {sportTotals.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <h3 className="section-title">Training Totals</h3>
@@ -131,7 +128,6 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Activity history */}
       <h3 className="section-title">Recent Activities</h3>
       <ActivityFilters selected={sportFilter} onChange={setSportFilter} />
 

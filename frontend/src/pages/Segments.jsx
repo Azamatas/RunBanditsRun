@@ -25,22 +25,17 @@ function decode(polyline) {
 
 function FitAll({ positions }) {
   const map = useMap();
-  const key = positions.length;
   useEffect(() => {
-    if (key > 0) map.fitBounds(positions, { padding: [40, 40] });
-  }, [map, key]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (positions.length > 0) map.fitBounds(positions, { padding: [40, 40] });
+  }, [map]);
   return null;
 }
 
-function FlyToSegment({ decoded, selectedId }) {
+function FlyToSegment({ positions, tick }) {
   const map = useMap();
   useEffect(() => {
-    if (!selectedId) return;
-    const target = decoded.find((d) => d.seg.id === selectedId);
-    if (target?.positions?.length >= 2) {
-      map.flyToBounds(target.positions, { padding: [60, 60], duration: 0.8 });
-    }
-  }, [selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (positions?.length >= 2) map.flyToBounds(positions, { padding: [60, 60], duration: 0.8 });
+  }, [tick]);
   return null;
 }
 
@@ -66,7 +61,6 @@ function SegmentCard({ seg, color, selected, onSelect, cardRef }) {
         transition: "box-shadow 0.2s, border-color 0.2s",
       }}
     >
-      {/* Color bar + header */}
       <div style={{ borderLeft: `5px solid ${color}`, padding: "16px 20px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
           <Link
@@ -84,7 +78,6 @@ function SegmentCard({ seg, color, selected, onSelect, cardRef }) {
         </div>
       </div>
 
-      {/* Leaderboard top 3 */}
       <div style={{ borderTop: "1px solid var(--gray-100)" }}>
         {top3.length === 0 ? (
           <p style={{ padding: "10px 20px", fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
@@ -128,6 +121,7 @@ function SegmentCard({ seg, color, selected, onSelect, cardRef }) {
 
 export default function Segments() {
   const [selectedId, setSelectedId] = useState(null);
+  const [flyTick, setFlyTick] = useState(0);
   const cardRefs = useRef({});
 
   const { data: segments = [], isLoading } = useQuery({
@@ -145,12 +139,12 @@ export default function Segments() {
 
   function handleSelect(id) {
     setSelectedId(id);
+    setFlyTick((t) => t + 1);
     cardRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   return (
     <div className="page">
-      {/* Map */}
       <div className="map-container" style={{ height: 380, marginBottom: 24 }}>
         <MapContainer
           center={[51.505, -0.09]}
@@ -163,7 +157,7 @@ export default function Segments() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {allPositions.length > 0 && <FitAll positions={allPositions} />}
-          <FlyToSegment decoded={decoded} selectedId={selectedId} />
+          <FlyToSegment positions={decoded.find(d => d.seg.id === selectedId)?.positions} tick={flyTick} />
           {decoded.map(({ seg, color, positions }) =>
             positions.length >= 2 ? (
               <Polyline
@@ -181,7 +175,6 @@ export default function Segments() {
         </MapContainer>
       </div>
 
-      {/* Segment cards */}
       <h3 className="section-title">Popular Segments</h3>
 
       {isLoading && (

@@ -89,7 +89,6 @@ export default function ActivityDetail() {
       </button>
 
       <div className="card-flush">
-        {/* Map or sport hero image */}
         {hasMap ? (
           <MapView polyline={activity.polyline} height={280} sportColor={SPORT_COLORS[sportType]} />
         ) : (
@@ -101,7 +100,6 @@ export default function ActivityDetail() {
           </div>
         )}
 
-        {/* Colored header */}
         <div className={`detail-header detail-header-${sportType}`}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
@@ -141,7 +139,6 @@ export default function ActivityDetail() {
           </div>
         </div>
 
-        {/* Stats grid */}
         <div className="detail-stats">
           {activity.distance != null && (
             <div className="detail-stat">
@@ -169,7 +166,6 @@ export default function ActivityDetail() {
           )}
         </div>
 
-        {/* Tagged athletes */}
         {taggedIds.length > 0 && (
           <div className="tagged-row" style={{ padding: "0 24px 16px", borderTop: "none" }}>
             {taggedIds.map((tid) => (
@@ -188,7 +184,6 @@ export default function ActivityDetail() {
           </div>
         )}
 
-        {/* Kudos bar */}
         <div style={{ padding: "16px 24px", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 16 }}>
           {!isOwner ? (
             <button

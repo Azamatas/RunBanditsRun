@@ -5,7 +5,7 @@ import { REFETCH_INTERVAL_MS } from "../constants/query";
 import { createActivity } from "../api/activities";
 import { getFriends } from "../api/users";
 import SportIcon from "../components/SportIcon";
-import RouteBuilder from "../components/RouteBuilder";
+import RouteBuilder, { ROUTE_DRAFT_KEY } from "../components/RouteBuilder";
 import { SPORT_THUMBNAILS } from "../constants/images";
 
 function apiError(err, fallback) {
@@ -66,6 +66,7 @@ export default function LogActivity() {
     mutationFn: createActivity,
     onSuccess: (activity) => {
       localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(ROUTE_DRAFT_KEY);
       navigate(`/activities/${activity.id}`);
     },
   });
@@ -162,7 +163,6 @@ export default function LogActivity() {
             </div>
           </div>
 
-          {/* Tag athletes */}
           <div className="form-group">
             <label>Tag Friends <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>(optional)</span></label>
             <input

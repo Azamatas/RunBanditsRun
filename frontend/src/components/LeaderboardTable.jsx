@@ -45,13 +45,15 @@ export default function LeaderboardTable({ efforts }) {
                   className="avatar avatar-sm"
                   style={{ background: AVATAR_COLORS[e.athlete_id % AVATAR_COLORS.length] }}
                 >
-                  {e.athlete_name?.[0]?.toUpperCase() ?? "?"}
+                  {(e.athlete_name ?? e.athlete_username ?? "?")[0].toUpperCase()}
                 </div>
-                {e.athlete_name}
+                {e.athlete_name ?? e.athlete_username}
               </div>
             </td>
-            <td className="leaderboard-time">{fmt(e.best_time)}</td>
-            <td style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}>—</td>
+            <td className="leaderboard-time">{fmt(e.best_time ?? e.elapsed_time)}</td>
+            <td style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)" }}>
+              {e.started_at ? new Date(e.started_at).toLocaleDateString() : "—"}
+            </td>
           </tr>
         ))}
       </tbody>

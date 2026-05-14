@@ -1,10 +1,15 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents } from "react-leaflet";
+import { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import polylineCodec from "@mapbox/polyline";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const DEFAULT_CENTER = [51.505, -0.09];
+export const ROUTE_DRAFT_KEY = "route_builder_draft";
+
+function loadDraft() {
+  try { const s = localStorage.getItem(ROUTE_DRAFT_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+}
 
 function haversineKm([lat1, lon1], [lat2, lon2]) {
   const R = 6371;
@@ -29,7 +34,7 @@ function segmentKm(points, i) {
 function dotIcon(color) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:10px;height:10px;background:${color};border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35)"></div>`,
+    html: `<div style="width:10px;height:10px;background:${color};border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.35);cursor:grab"></div>`,
     iconSize: [10, 10],
     iconAnchor: [5, 5],
   });
@@ -38,8 +43,9 @@ function dotIcon(color) {
 function segLabelIcon(label) {
   return L.divIcon({
     className: "",
-    html: `<div style="background:rgba(255,255,255,0.92);border:1.5px solid var(--border,#e4e4e7);border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;color:#3f3f46;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,0.15);cursor:pointer">${label}</div>`,
+    html: `<div style="display:inline-flex;align-items:center;gap:5px;background:#1c1c1e;color:#fff;border-radius:20px;padding:4px 10px 4px 8px;font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.35);cursor:grab;transform:translate(-50%,-50%);user-select:none;letter-spacing:0.01em"><svg width="8" height="10" viewBox="0 0 8 10" fill="rgba(255,255,255,0.45)"><circle cx="2" cy="2" r="1.2"/><circle cx="6" cy="2" r="1.2"/><circle cx="2" cy="5" r="1.2"/><circle cx="6" cy="5" r="1.2"/><circle cx="2" cy="8" r="1.2"/><circle cx="6" cy="8" r="1.2"/></svg>${label}</div>`,
     iconAnchor: [0, 0],
+    iconSize: [0, 0],
   });
 }
 
@@ -48,27 +54,53 @@ function ClickHandler({ onAdd }) {
   return null;
 }
 
+function RecenterMap({ center }) {
+  const map = useMap();
+  useEffect(() => { map.setView(center, map.getZoom()); }, [center]);
+  return null;
+}
+
+
 function fmtTime(totalMinutes) {
   const m = Math.floor(totalMinutes);
   const s = Math.round((totalMinutes - m) * 60);
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function RouteBuilder({ onChange, onDistance, onDuration }) {
-  const [points, setPoints] = useState([]);
-  const [segTimes, setSegTimes] = useState([]); // minutes per segment (string for input)
-  const [center, setCenter] = useState(DEFAULT_CENTER);
+export default function RouteBuilder({ onChange, onDistance, onDuration, initialPolyline }) {
+  const fromPolyline = initialPolyline
+    ? (() => { try { return polylineCodec.decode(initialPolyline); } catch { return []; } })()
+    : null;
+  const draft = fromPolyline ? null : loadDraft();
+  const initPoints = fromPolyline ?? draft?.points ?? [];
+  const [points, setPoints] = useState(initPoints);
+  const [segTimes, setSegTimes] = useState(fromPolyline ? [] : (draft?.segTimes ?? []));
+  const [center, setCenter] = useState(
+    initPoints.length > 0 ? initPoints[initPoints.length - 1] : DEFAULT_CENTER
+  );
 
   useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
-      () => {},
-    );
+    if (initPoints.length >= 2) {
+      onChange(polylineCodec.encode(initPoints));
+      onDistance?.(totalKm(initPoints));
+      if (!fromPolyline) onDuration?.((draft?.segTimes ?? []).reduce((s, t) => s + (parseFloat(t) || 0), 0));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initPoints.length === 0) {
+      navigator.geolocation?.getCurrentPosition(
+        (pos) => setCenter([pos.coords.latitude, pos.coords.longitude]),
+        () => {},
+        { maximumAge: 300_000, timeout: 8000 },
+      );
+    }
   }, []);
 
   function update(nextPoints, nextTimes) {
     setPoints(nextPoints);
     setSegTimes(nextTimes);
+    if (!fromPolyline) localStorage.setItem(ROUTE_DRAFT_KEY, JSON.stringify({ points: nextPoints, segTimes: nextTimes }));
     onChange(nextPoints.length >= 2 ? polylineCodec.encode(nextPoints) : "");
     onDistance?.(nextPoints.length >= 2 ? totalKm(nextPoints) : 0);
     const total = nextTimes.reduce((s, t) => s + (parseFloat(t) || 0), 0);
@@ -76,6 +108,7 @@ export default function RouteBuilder({ onChange, onDistance, onDuration }) {
   }
 
   function addPoint(pt) {
+    setCenter(pt);
     update([...points, pt], [...segTimes, ""]);
   }
 
@@ -95,6 +128,10 @@ export default function RouteBuilder({ onChange, onDistance, onDuration }) {
     onDuration?.(total);
   }
 
+  const polylineRef = useRef(null);
+  const pointsRef = useRef(points);
+  useEffect(() => { pointsRef.current = points; }, [points]);
+
   const segCount = points.length - 1;
   const totalMin = segTimes.reduce((s, t) => s + (parseFloat(t) || 0), 0);
 
@@ -106,22 +143,60 @@ export default function RouteBuilder({ onChange, onDistance, onDuration }) {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <RecenterMap center={center} />
           <ClickHandler onAdd={addPoint} />
           {points.length >= 2 && (
-            <Polyline positions={points} pathOptions={{ color: "var(--accent)", weight: 4, opacity: 0.85 }} />
+            <Polyline ref={polylineRef} positions={points} pathOptions={{ color: "var(--accent)", weight: 4, opacity: 0.85 }} />
           )}
           {points.map((pt, i) => (
             <Marker
               key={i}
               position={pt}
               icon={dotIcon(i === 0 ? "#16a34a" : i === points.length - 1 ? "#e11d48" : "var(--accent)")}
+              draggable
+              eventHandlers={{
+                drag: (e) => {
+                  const { lat, lng } = e.target.getLatLng();
+                  const next = [...pointsRef.current];
+                  next[i] = [lat, lng];
+                  pointsRef.current = next;
+                  polylineRef.current?.setLatLngs(next);
+                },
+                dragend: (e) => {
+                  const { lat, lng } = e.target.getLatLng();
+                  const next = [...pointsRef.current];
+                  next[i] = [lat, lng];
+                  update(next, segTimes);
+                },
+              }}
             />
           ))}
           {Array.from({ length: segCount }, (_, i) => {
             const mid = [(points[i][0] + points[i + 1][0]) / 2, (points[i][1] + points[i + 1][1]) / 2];
             const label = segTimes[i] ? `${segTimes[i]} min` : `seg ${i + 1}`;
             return (
-              <Marker key={`mid-${i}`} position={mid} icon={segLabelIcon(label)}>
+              <Marker
+                key={`mid-${i}`}
+                position={mid}
+                icon={segLabelIcon(label)}
+                draggable
+                eventHandlers={{
+                  drag: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    const preview = [...pointsRef.current];
+                    preview.splice(i + 1, 0, [lat, lng]);
+                    polylineRef.current?.setLatLngs(preview);
+                  },
+                  dragend: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    const nextPoints = [...pointsRef.current];
+                    nextPoints.splice(i + 1, 0, [lat, lng]);
+                    const nextTimes = [...segTimes];
+                    nextTimes.splice(i + 1, 0, "");
+                    update(nextPoints, nextTimes);
+                  },
+                }}
+              >
                 <Popup closeButton={false} autoPan={false}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 130 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted,#a1a1aa)" }}>
