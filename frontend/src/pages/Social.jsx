@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { REFETCH_INTERVAL_MS } from "../constants/query";
 import {
   searchUsers,
   getFriends,
