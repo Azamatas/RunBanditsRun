@@ -21,21 +21,25 @@ export default function Social() {
     queryKey: ["searchUsers", query],
     queryFn: () => searchUsers(query),
     enabled: true,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const { data: friends = [] } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const { data: incomingFriendRequests = [] } = useQuery({
     queryKey: ["incomingFriendRequests"],
     queryFn: getIncomingFriendRequests,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const { data: sentFriendRequests = [] } = useQuery({
     queryKey: ["sentFriendRequests"],
     queryFn: getSentFriendRequests,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const friendIds = new Set(friends.map((u) => u.id));

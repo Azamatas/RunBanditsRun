@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { REFETCH_INTERVAL_MS } from "../constants/query";
 import { getUser, getUserActivities, sendFriendRequest, acceptFriendRequest, removeFriend, getFriends, getSentFriendRequests, getIncomingFriendRequests } from "../api/users";
 import ActivityCard from "../components/ActivityCard";
 import ActivityFilters from "../components/ActivityFilters";
@@ -51,16 +52,19 @@ export default function UserProfile() {
   const { data: friends } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const { data: sentFriendRequests } = useQuery({
     queryKey: ["sentFriendRequests"],
     queryFn: getSentFriendRequests,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const { data: incomingFriendRequests } = useQuery({
     queryKey: ["incomingFriendRequests"],
     queryFn: getIncomingFriendRequests,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const friendIds = new Set((friends ?? []).map((u) => u.id));

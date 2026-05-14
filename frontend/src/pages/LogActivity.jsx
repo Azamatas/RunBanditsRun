@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { REFETCH_INTERVAL_MS } from "../constants/query";
 import { createActivity } from "../api/activities";
 import { getFriends } from "../api/users";
 import SportIcon from "../components/SportIcon";
@@ -58,6 +59,7 @@ export default function LogActivity() {
   const { data: friends } = useQuery({
     queryKey: ["friends"],
     queryFn: getFriends,
+    refetchInterval: REFETCH_INTERVAL_MS,
   });
 
   const mutation = useMutation({

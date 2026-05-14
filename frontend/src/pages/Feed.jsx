@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { REFETCH_INTERVAL_MS } from "../constants/query";
 import { Link } from "react-router-dom";
 import { getFeed } from "../api/feed";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +25,7 @@ export default function Feed() {
   const { data: allActivities = [], isLoading, isError } = useQuery({
     queryKey: ["feed", 0],
     queryFn: () => getFeed(0),
+    refetchInterval: 5000,
   });
 
   const loadMore = useCallback(async () => {
