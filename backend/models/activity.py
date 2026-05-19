@@ -7,6 +7,7 @@ from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, Strin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.database import Base
+from backend.geometry import PATH_SRID
 
 if TYPE_CHECKING:
     from backend.models.common_activity import CommonActivity
@@ -49,7 +50,7 @@ class Activity(Base):
     duration: Mapped[int | None] = mapped_column(Integer)
     elevation: Mapped[float | None] = mapped_column(Float)
     polyline: Mapped[str | None] = mapped_column(Text)
-    path: Mapped[Any] = mapped_column(Geometry(geometry_type="LINESTRING", srid=4326))
+    path: Mapped[Any] = mapped_column(Geometry(geometry_type="LINESTRING", srid=PATH_SRID))
     visibility: Mapped[Visibility] = mapped_column(
         Enum(Visibility, name="visibility", values_callable=lambda obj: [e.value for e in obj]),
         default=Visibility.PUBLIC,

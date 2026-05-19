@@ -16,10 +16,11 @@ export function activityPayload(overrides = {}) {
   };
 }
 
-export function segmentPayload(overrides = {}) {
+export function commonActivityPayload(overrides = {}) {
   return {
-    name: unique("Segment"),
-    distance: 2,
+    name: unique("CommonActivity"),
+    sport_type: "run",
+    polyline: "_p~iF~ps|U_ulLnnqC_mqNvxq`@",
     ...overrides,
   };
 }

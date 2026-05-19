@@ -8,7 +8,6 @@ from fastapi.responses import JSONResponse
 from psycopg2.errors import NumericValueOutOfRange
 from sqlalchemy.exc import DataError
 
-from backend.jobs import scheduler
 from backend.logging_config import setup_logging
 from backend.middleware.logging_middleware import LoggingMiddleware
 from backend.routers import activities, auth, common_activities, feed, kudos, stats, users
@@ -24,9 +23,6 @@ if SECRET_KEY == "change-me-in-production":
     logger.warning("Using default JWT secret key — set JWT_SECRET_KEY env var in production!")
 
 app = FastAPI(title="RunBanditsRun")
-
-# Start the scheduler
-scheduler.start()
 
 app.add_middleware(LoggingMiddleware)
 

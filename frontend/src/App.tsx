@@ -10,6 +10,7 @@ import EditActivity from "./pages/EditActivity";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Social from "./pages/Social";
+import CreateCommonActivity from "./pages/CreateCommonActivity";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/register" element={<PublicOnlyRoute><Register /></PublicOnlyRoute>} />
         <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
         <Route path="/add-activity" element={<ProtectedRoute><AddActivity /></ProtectedRoute>} />
+        <Route path="/add-common-activity" element={<ProtectedRoute><CreateCommonActivity /></ProtectedRoute>} />
         <Route path="/activities/:id" element={<ProtectedRoute><ActivityDetail /></ProtectedRoute>} />
         <Route path="/activities/:id/edit" element={<ProtectedRoute><EditActivity /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

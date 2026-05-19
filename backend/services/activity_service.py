@@ -8,6 +8,8 @@ from sqlalchemy.sql.selectable import CompoundSelect
 
 from backend.models.activity import Activity, Visibility
 from backend.models.friendship import Friendship, FriendshipStatus
+from backend.models.user import User
+from backend.services import common_activity_service
 
 logger = logging.getLogger("runbanditsrun.services.activity")
 
@@ -77,16 +79,16 @@ def enrich_activity(activity: Activity, user_id: int) -> dict:
 
 
 def create_activity(db: Session, owner_id: int, data: dict, tagged_ids: list[int]) -> Activity:
-    from backend.models.user import User
-
     logger.info(f"Creating activity for user {owner_id} with data: {list(data.keys())}")
     activity = Activity(owner_id=owner_id, **data)
     if tagged_ids:
         tagged = db.query(User).filter(User.id.in_(tagged_ids)).all()
         activity.tagged_athletes = tagged
     db.add(activity)
-    db.commit()
+    db.flush()
     db.refresh(activity)
+    common_activity_service.link_activity_to_closest_common(db, activity)
+    db.commit()
     logger.info(f"Created activity {activity.id} for user {owner_id}")
     return activity
 
@@ -119,12 +121,10 @@ def update_activity(db: Session, activity_id: int, owner_id: int, updates: dict)
 
 
 def delete_activity(db: Session, activity_id: int, owner_id: int) -> bool:
-    from backend.models.activity import Activity as ActivityModel
-
     logger.info(f"Deleting activity {activity_id} by owner {owner_id}")
     activity = (
-        db.query(ActivityModel)
-        .filter(ActivityModel.id == activity_id, ActivityModel.owner_id == owner_id)
+        db.query(Activity)
+        .filter(Activity.id == activity_id, Activity.owner_id == owner_id)
         .first()
     )
     if not activity:

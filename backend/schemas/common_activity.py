@@ -1,6 +1,19 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from backend.models.activity import SportType
+
+
+class CommonActivityCreate(BaseModel):
+    name: str
+    sport_type: SportType
+    polyline: str
+
+    @field_validator("polyline")
+    @classmethod
+    def polyline_must_not_be_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("polyline must not be empty")
+        return v
 
 
 class CommonActivityOut(BaseModel):

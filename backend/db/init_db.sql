@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS common_activities (
     id SERIAL PRIMARY KEY,
     name VARCHAR(200) NOT NULL,
     polyline TEXT,
-    path GEOMETRY(LineString, 4326),
+    path GEOMETRY(LineString, 3857),   -- Web Mercator (meter units)
     distance FLOAT,
     sport_type sport_type
 );
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS activities (
     duration INTEGER,
     elevation FLOAT,
     polyline TEXT,
-    path GEOMETRY(LineString, 4326),
+    path GEOMETRY(LineString, 3857),   -- Web Mercator (meter units)
     visibility visibility DEFAULT 'public',
     started_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -99,8 +99,8 @@ CREATE INDEX IF NOT EXISTS idx_kudos_user_id ON kudos(user_id);
 -- ============================================
 
 CREATE OR REPLACE FUNCTION decode_polyline_to_geom(encoded TEXT)
-RETURNS GEOMETRY(LineString, 4326) AS $$
-  SELECT ST_LineFromEncodedPolyline(encoded);
+RETURNS GEOMETRY(LineString, 3857) AS $$
+  SELECT ST_Transform(ST_LineFromEncodedPolyline(encoded), 3857);
 $$ LANGUAGE SQL IMMUTABLE;
 
 CREATE OR REPLACE FUNCTION update_activity_path()

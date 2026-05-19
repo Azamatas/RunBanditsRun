@@ -44,18 +44,18 @@ export interface ActivityCreatePayload {
 
 export interface ActivityUpdatePayload extends Partial<ActivityCreatePayload> {}
 
-export interface Segment {
+export interface CommonActivity {
   id: number;
   name: string;
   polyline: string | null;
   distance: number | null;
-  sport_type?: SportType;
+  sport_type: SportType;
 }
 
-export interface SegmentCreatePayload {
+export interface CommonActivityCreatePayload {
   name: string;
-  distance?: number | null;
-  polyline?: string | null;
+  sport_type: SportType;
+  polyline: string;
 }
 
 export interface LeaderboardEntry {

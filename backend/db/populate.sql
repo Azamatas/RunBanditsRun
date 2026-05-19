@@ -23,8 +23,8 @@ INSERT INTO users (id, username, email, password_hash, bio, location, created_at
 
 -- Common Activities (auto-generated from frequent routes)
 INSERT INTO common_activities (id, name, polyline, path, distance, sport_type) VALUES
-    (1, 'Auto: run Path 1', 'Encoded polyline for common run route 1', ST_LineFromEncodedPolyline('Encoded polyline for common run route 1'), 5.0, 'run'),
-    (2, 'Auto: ride Path 1', 'Encoded polyline for common ride route 1', ST_LineFromEncodedPolyline('Encoded polyline for common ride route 1'), 25.0, 'ride');
+    (1, 'Auto: run Path 1', 'Encoded polyline for common run route 1', ST_Transform(ST_LineFromEncodedPolyline('Encoded polyline for common run route 1'), 3857), 5.0, 'run'),
+    (2, 'Auto: ride Path 1', 'Encoded polyline for common ride route 1', ST_Transform(ST_LineFromEncodedPolyline('Encoded polyline for common ride route 1'), 3857), 25.0, 'ride');
 
 -- Activities with realistic data
 INSERT INTO activities (id, owner_id, title, sport_type, distance, duration, elevation, polyline, visibility, started_at, created_at, common_activity_id) VALUES
