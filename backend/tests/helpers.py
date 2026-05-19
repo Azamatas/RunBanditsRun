@@ -1,4 +1,10 @@
+import uuid
+
 from backend.models.activity import Activity, SportType, Visibility
+
+
+def unique(prefix=""):
+    return f"{prefix}_{uuid.uuid4().hex[:8]}"
 
 
 def create_activity(db, owner_id, **kwargs):

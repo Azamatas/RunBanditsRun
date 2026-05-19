@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from sqlalchemy import text
 
 from backend.models.activity import Activity, SportType, Visibility
@@ -7,17 +7,17 @@ from backend.models.common_activity import CommonActivity
 from backend.models.user import User
 from backend.jobs.common_activity_detector import detect_common_activities_job
 from backend.config import config
+from helpers import unique
 
 
 class TestCommonActivityDetector:
     def test_detect_common_activities_job_basic(self, db):
         """Test that the job creates common activities and links activities"""
-        import uuid
-        user = User(username=f"testuser_{uuid.uuid4().hex[:8]}", email=f"test_{uuid.uuid4().hex[:8]}@test.com", password_hash="hash")
+        user = User(username=unique("testuser"), email=f"{unique('test')}@test.com", password_hash="hash")
         db.add(user)
         db.commit()
 
-        base_time = datetime.utcnow() - timedelta(minutes=30)
+        base_time = datetime.now(UTC) - timedelta(minutes=30)
         
         activity_ids = []
         for i in range(3):
@@ -56,12 +56,11 @@ class TestCommonActivityDetector:
 
     def test_detect_common_activities_job_no_clustering(self, db):
         """Test that activities that are too far apart don't get clustered"""
-        import uuid
-        user = User(username=f"testuser2_{uuid.uuid4().hex[:8]}", email=f"test2_{uuid.uuid4().hex[:8]}@test.com", password_hash="hash")
+        user = User(username=unique("testuser"), email=f"{unique('test')}@test.com", password_hash="hash")
         db.add(user)
         db.commit()
 
-        base_time = datetime.utcnow() - timedelta(hours=1)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
 
         far_apart_activities = [
             ("LINESTRING(0.0 0.0, 0.1 0.1)", "Run 1"),
@@ -93,12 +92,11 @@ class TestCommonActivityDetector:
 
     def test_detect_common_activities_job_different_sports(self, db):
         """Test that activities of different sport types create separate common activities"""
-        import uuid
-        user = User(username=f"testuser3_{uuid.uuid4().hex[:8]}", email=f"test3_{uuid.uuid4().hex[:8]}@test.com", password_hash="hash")
+        user = User(username=unique("testuser"), email=f"{unique('test')}@test.com", password_hash="hash")
         db.add(user)
         db.commit()
 
-        base_time = datetime.utcnow() - timedelta(hours=1)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
 
         run_ids = []
         for i in range(3):
@@ -158,12 +156,11 @@ class TestCommonActivityDetector:
 
     def test_detect_common_activities_job_min_length(self, db):
         """Test that very short paths don't create common activities"""
-        import uuid
-        user = User(username=f"testuser4_{uuid.uuid4().hex[:8]}", email=f"test4_{uuid.uuid4().hex[:8]}@test.com", password_hash="hash")
+        user = User(username=unique("testuser"), email=f"{unique('test')}@test.com", password_hash="hash")
         db.add(user)
         db.commit()
 
-        base_time = datetime.utcnow() - timedelta(hours=1)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
         for i in range(3):
             activity = Activity(
                 owner_id=user.id,
@@ -188,8 +185,7 @@ class TestCommonActivityDetector:
 
     def test_detect_common_activities_job_already_linked(self, db):
         """Test that activities already linked to common activities are not processed again"""
-        import uuid
-        user = User(username=f"testuser5_{uuid.uuid4().hex[:8]}", email=f"test5_{uuid.uuid4().hex[:8]}@test.com", password_hash="hash")
+        user = User(username=unique("testuser"), email=f"{unique('test')}@test.com", password_hash="hash")
         db.add(user)
 
         common_activity = CommonActivity(
@@ -202,7 +198,7 @@ class TestCommonActivityDetector:
         db.add(common_activity)
         db.commit()
 
-        base_time = datetime.utcnow() - timedelta(hours=1)
+        base_time = datetime.now(UTC) - timedelta(hours=1)
 
         activity_linked = Activity(
             owner_id=user.id,
